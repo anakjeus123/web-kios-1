@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style-dashboard-admin.css">
+    <title>Dashboard Admin</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>PEMILIK</h2>
+            </div>
+
+            <ul class="dashboard-list">
+                <li class="dashboard"><a href="dashboard_admin.html" class="active"><img src="dashboard.png"
+                            class="sidebar-icon" alt="Dashboard"> Dashboard</a></li>
+                <li class="data-penyewaan"><a href="data_penyewaan.html"><img src="property.png" class="sidebar-icon"
+                            alt="Data Kontrakan"> Data Kontrakan</a></li>
+                <li class="dashboard-penyewa"><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon"
+                            alt="Dashboard Penyewa"> Dashboard Penyewa</a></li>
+            </ul>
+        </aside>
+
+        <div class="main-layout">
+            <header class="top-header">
+                <div class="header-right">
+                    <a href="index.html" class="btn-logout-header">
+                        <span class="icon">🚪</span> Keluar
+                    </a>
+                    <span class="header-divider">|</span>
+                    <div class="header-profile">
+                        <span class="header-username" id="admin-top-name">Admin</span>
+                        <span class="header-user-icon" id="admin-top-avatar">A</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h2>Selamat Datang, <span id="admin-greeting-name">Admin</span></h2>
+                        <p>Pantau status penyewaan kios dan kelola penghuni dengan mudah.</p>
+                    </div>
+                    <div class="welcome-date" id="admin-current-date">
+                        -
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-container" style="margin-bottom: 32px; display: flex; gap: 24px;">
+                    <div class="dashboard-box-terisi">
+                        <h2 class="dashboard-box-tittle">Slot Terisi</h2>
+                        <p class="dashboard-box-value" id="jumlah-terisi">-</p>
+                    </div>
+                    <div class="dashboard-box-kosong">
+                        <h2 class="dashboard-box-kosong-tittle">Slot Kosong</h2>
+                        <p class="dashboard-box-kosong-value" id="jumlah-kosong">-</p>
+                    </div>
+                </div>
+
+                <div class="penghuni-content">
+                    <h1 style="margin-bottom: 20px;">Statistik & Penghuni Kios</h1>
+                    <table class="penghuni-kios-tabel">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nama</th>
+                                <th>Nomor HP</th>
+                                <th>Nomor Slot</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Selesai</th>
+                                <th>Sisa Waktu</th>
+                                <th>Harga Sewa</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-penghuni">
+                            <!-- Diisi dinamis lewat JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <script src="shared.js"></script>
+            <script>
+                // Ambil nama Admin dari localStorage
+                const adminName = localStorage.getItem('namaAdmin') || 'Admin';
+
+                // Tampilkan nama di greeting & top header
+                document.getElementById('admin-top-name').textContent = adminName;
+                document.getElementById('admin-greeting-name').textContent = adminName;
+
+                // Buat inisial avatar di top header
+                if (adminName.trim().length > 0) {
+                    document.getElementById('admin-top-avatar').textContent = adminName.trim().charAt(0).toUpperCase();
+                }
+
+                // Tampilkan tanggal hari ini
+                const opsiDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const hariIni = new Date().toLocaleDateString('id-ID', opsiDate);
+                document.getElementById('admin-current-date').textContent = hariIni;
+
+                async function initDashboard() {
+                    const kiosList = await getKiosData();
+                    const terisi = kiosList.filter(k => k.nama && k.nama.trim() !== '');
+                    const kosong = kiosList.filter(k => !k.nama || k.nama.trim() === '');
+
+                    document.getElementById('jumlah-terisi').textContent = terisi.length;
+                    document.getElementById('jumlah-kosong').textContent = kosong.length;
+
+                    const tbody = document.getElementById('tbody-penghuni');
+                    tbody.innerHTML = '';
+
+                    if (terisi.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="9" style="color: #666; font-style: italic; padding: 18px;">Belum ada penghuni kios.</td></tr>`;
+                    } else {
+                        terisi.forEach((k, i) => {
+                            const sisa = hitungSisaWaktu(k.selesai);
+                            const statusKelas = k.statusPembayaran === 'Lunas' ? 'kotak-aktif' : 'kotak-mati';
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${k.nama}</td>
+                        <td>${k.hp}</td>
+                        <td>${k.slot}</td>
+                        <td>${formatTanggalIndo(k.mulai)}</td>
+                        <td>${formatTanggalIndo(k.selesai)}</td>
+                        <td style="font-weight:600; color:#b85c00;">${sisa}</td>
+                        <td>${k.harga}</td>
+                        <td><span class="${statusKelas}">${k.statusPembayaran}</span></td>
+                    `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                }
+                initDashboard();
+            </script>
+        </div> <!-- Close main-layout -->
+    </div> <!-- Close dashboard-wrapper -->
+</body>
+
+</html>

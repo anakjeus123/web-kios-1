@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <a href="login_admin.html"></a>
+    <title>Login - Sistem Penyewaan Kios</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <!-- Bagian Header (Warna Biru Muda) -->
+        <div class="login-header">
+            <h1 class="login-title" id="form-title">LOGIN</h1>
+            <p class="login-subtitle">Penyewaan Kios</p>
+        </div>
+
+        <!-- Bagian Form Login -->
+        <!-- Box Notifikasi/Peringatan (Warna Kuning) -->
+        <div class="alert-box">
+            Masukkan username dan password dengan benar!
+        </div>
+
+        <!-- Input Group Username -->
+        <form id="login-form" action="dashboard_penyewa.html" method="post">
+            <div class="input-group">
+                <span class="input-label">Username :</span>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <!-- Input Group Password -->
+            <div class="input-group">
+                <span class="input-label">Password :</span>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <!-- Tombol Login (Warna Hijau) -->
+
+            <button type="submit" class="btn-login btn-submit">
+                Login
+            </button>
+        </form>
+
+        <!-- Link Navigasi -->
+        <div class="form-footer">
+            <a href="#" id="link-to-register">Belum punya akun? Daftar Sekarang</a>
+            <a href="#" id="link-to-forgot">Lupa password?</a>
+        </div>
+
+        <script src="login.js"></script>
+</body>
+
+</html>

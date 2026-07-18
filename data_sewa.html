@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style-data-sewa.css">
+    <title>Dashboard Penyewa</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <h2 class="sidebar-tittle">PENYEWA</h2>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard"> Dashboard</a></li>
+                <li><a href="data_sewa.html" class="active"><img src="property.png" class="sidebar-icon" alt="Data Sewa"> Data Sewa</a></li>
+                <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard Admin"> Dashboard Admin</a></li>
+            </ul>
+        </aside>
+        
+        <div class="main-layout">
+            <header class="top-header">
+                <div class="header-right">
+                    <a href="index.html" class="btn-logout-header">
+                        <span class="icon">🚪</span> Keluar
+                    </a>
+                    <span class="header-divider">|</span>
+                    <div class="header-profile">
+                        <span class="header-username" id="tenant-top-name">Penyewa</span>
+                        <span class="header-user-icon" id="tenant-top-avatar">P</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+            <h2>Data Sewa</h2>
+            <table class="table-sewa">
+                <thead>
+                    <tr>
+                        <th>Nomor Slot </th>
+                        <th>Tanggal Mulai</th>
+                        <th>Durasi</th>
+                        <th>Tanggal Selesai</th>
+                        <th>Status Pembayaran</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-sewa-body">
+                    <!-- Diisi dinamis lewat script -->
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <!-- Panggil shared.js database lokal dan utilitas -->
+    <script src="shared.js"></script>
+    <script>
+        const namaTersimpan = localStorage.getItem('namaPenyewa');
+        if (!namaTersimpan) {
+            window.location.href = 'index.html';
+        } else {
+            // Set nama dan avatar di top header
+            document.getElementById('tenant-top-name').textContent = namaTersimpan;
+            if (namaTersimpan.trim().length > 0) {
+                document.getElementById('tenant-top-avatar').textContent = namaTersimpan.trim().charAt(0).toUpperCase();
+            }
+
+            // Tampilkan tombol Dashboard Admin jika login sebagai admin
+            if (namaTersimpan === 'abiM') {
+                document.getElementById('admin-link-item').style.display = 'block';
+            }
+
+            async function initDataSewa() {
+                const kiosList = await getKiosData();
+                // Cari data sewa berdasarkan nama penyewa (case-insensitive)
+                const kiosSewa = kiosList.find(k => k.nama && k.nama.toLowerCase() === namaTersimpan.toLowerCase());
+     
+                const tbody = document.getElementById('tabel-sewa-body');
+                tbody.innerHTML = '';
+     
+                if (kiosSewa) {
+                    const tr = document.createElement('tr');
+                    const badgeClass = kiosSewa.statusPembayaran === 'Lunas' ? 'badge-lunas' : 'badge-belum-lunas';
+     
+                    tr.innerHTML = `
+                        <td>${kiosSewa.slot}</td>
+                        <td>${formatTanggalIndo(kiosSewa.mulai)}</td>
+                        <td>${kiosSewa.durasi} Tahun</td>
+                        <td>${formatTanggalIndo(kiosSewa.selesai)}</td>
+                        <td align="center"><span class="${badgeClass}">${kiosSewa.statusPembayaran}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                } else {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="color: #666; font-style: italic; padding: 20px;">
+                                Belum ada data penyewaan aktif. Silakan pilih kios di halaman Dashboard terlebih dahulu.
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+            initDataSewa();
+        }
+    </script>
+        </div> <!-- Close main-layout -->
+    </div> <!-- Close dashboard-wrapper -->
+</body>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style-data-penyewaan.css">
+    <title>Data Penyewaan</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h2>PEMILIK</h2>
+            </div>
+            <ul class="dashboard-list">
+                <li class="dashboard"><a href="dashboard_admin.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard"> Dashboard</a></li>
+                <li class="data-penyewaan"><a href="data_penyewaan.html" class="active"><img src="property.png" class="sidebar-icon" alt="Data Kontrakan"> Data Kontrakan</a></li>
+                <li class="dashboard-penyewa"><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard Penyewa"> Dashboard Penyewa</a></li>
+            </ul>
+        </aside>
+        
+        <div class="main-layout">
+            <header class="top-header">
+                <div class="header-right">
+                    <a href="index.html" class="btn-logout-header">
+                        <span class="icon">🚪</span> Keluar
+                    </a>
+                    <span class="header-divider">|</span>
+                    <div class="header-profile">
+                        <span class="header-username" id="admin-top-name">Admin</span>
+                        <span class="header-user-icon" id="admin-top-avatar">A</span>
+                    </div>
+                </div>
+            </header>
+    <main class="dashboard-penyewaan">
+        <h1 class="dashboard-penyewaan-tittle">Data Penyewaan Kios</h1>
+        <p class="tambah-sewa" id="btn-tambah-sewa">+ Tambah Sewaan</p>
+        <table class="tabel-penyewaan">
+            <thead>
+                <tr>
+                    <th>Slot</th>
+                    <th>Nama Penyewa</th>
+                    <th>Nomor HP</th>
+                    <th>Tanggal Mulai</th>
+                    <th>Durasi</th>
+                    <th>Tanggal Selesai</th>
+                    <th>Sisa Waktu</th>
+                    <th>Status Bayar</th>
+                    <th>Harga Sewa</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tabel-body-penyewaan">
+                <!-- Diisi dinamis via JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- Tabel Riwayat Penyewaan -->
+        <div class="riwayat-section">
+            <h2>Riwayat Penyewaan Kios</h2>
+            <table class="tabel-riwayat">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Slot</th>
+                        <th>Nama</th>
+                        <th>Nomor HP</th>
+                        <th>Mulai</th>
+                        <th>Durasi</th>
+                        <th>Selesai</th>
+                        <th>Status</th>
+                        <th>Tgl Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-riwayat-body">
+                    <!-- Diisi dinamis -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- MODAL POP-UP TAMBAH SEWA -->
+    <div id="modal-tambah" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Tambah Data Sewaan</h2>
+            <form id="form-tambah-sewa">
+                <div class="form-group">
+                    <label>Nomor Slot:</label>
+                    <select id="input-slot" required>
+                        <!-- Diisi slot kosong secara dinamis -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nama Penyewa:</label>
+                    <input type="text" id="input-nama" required>
+                </div>
+                <div class="form-group">
+                    <label>Nomor HP:</label>
+                    <input type="tel" id="input-hp" placeholder="Contoh: 0812xxxx" required>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Mulai:</label>
+                    <input type="date" id="input-mulai" required>
+                </div>
+                <div class="form-group">
+                    <label>Durasi (Tahun):</label>
+                    <select id="input-durasi" required>
+                        <option value="1">1 Tahun</option>
+                        <option value="2">2 Tahun</option>
+                        <option value="3">3 Tahun</option>
+                        <option value="5">5 Tahun</option>
+                        <option value="10">10 Tahun</option>
+                        <option value="30">30 Tahun</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status Pembayaran:</label>
+                    <select id="input-status" required>
+                        <option value="Lunas">Lunas</option>
+                        <option value="Belum Lunas">Belum Lunas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Harga Sewa:</label>
+                    <input type="text" id="input-harga" placeholder="Contoh: Rp. 20.000.000" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="btn-batal" class="btn-cancel">Batal</button>
+                    <button type="submit" class="btn-save">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POP-UP EDIT SEWA -->
+    <div id="modal-edit" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Edit Data Sewaan</h2>
+            <form id="form-edit-sewa">
+                <!-- Simpan index slot yang sedang diedit -->
+                <input type="hidden" id="edit-slot-index">
+                <div class="form-group">
+                    <label>Nomor Slot:</label>
+                    <input type="text" id="edit-slot" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Nama Penyewa:</label>
+                    <input type="text" id="edit-nama" required>
+                </div>
+                <div class="form-group">
+                    <label>Nomor HP:</label>
+                    <input type="tel" id="edit-hp" required>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Mulai:</label>
+                    <input type="date" id="edit-mulai" required>
+                </div>
+                <div class="form-group">
+                    <label>Durasi (Tahun):</label>
+                    <select id="edit-durasi" required>
+                        <option value="1">1 Tahun</option>
+                        <option value="2">2 Tahun</option>
+                        <option value="3">3 Tahun</option>
+                        <option value="5">5 Tahun</option>
+                        <option value="10">10 Tahun</option>
+                        <option value="30">30 Tahun</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status Pembayaran:</label>
+                    <select id="edit-status" required>
+                        <option value="Lunas">Lunas</option>
+                        <option value="Belum Lunas">Belum Lunas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Harga Sewa:</label>
+                    <input type="text" id="edit-harga" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="btn-batal-edit" class="btn-cancel">Batal</button>
+                    <button type="submit" class="btn-save">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="data_penyewaan.js"></script>
+    <script>
+        // Ambil nama Admin dari localStorage
+        const adminName = localStorage.getItem('namaAdmin') || 'Admin';
+        document.getElementById('admin-top-name').textContent = adminName;
+        if (adminName.trim().length > 0) {
+            document.getElementById('admin-top-avatar').textContent = adminName.trim().charAt(0).toUpperCase();
+        }
+    </script>
+        </div> <!-- Close main-layout -->
+    </div> <!-- Close dashboard-wrapper -->
+</body>
+
+</html>

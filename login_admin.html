@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style-login-admin.css">
+    <a href="login_admin.html"></a>
+    <title>Login - Sistem Penyewaan Kios</title>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <!-- Bagian Header (Warna Biru Muda) -->
+        <div class="login-header">
+            <h1 class="login-title" id="form-title">LOGIN ADMIN</h1>
+            <p class="login-subtitle">Penyewaan Kios</p>
+        </div>
+
+        <!-- Bagian Form Login -->
+        <!-- Box Notifikasi/Peringatan (Warna Kuning) -->
+        <div class="alert-box">
+            Masukkan username dan password dengan benar! (admin/admin)
+        </div>
+
+        <form id="admin-login-form">
+            <!-- Input Group Username -->
+            <div class="input-group">
+                <span class="input-label">Username :</span>
+                <input type="text" id="admin-username" name="username" required>
+            </div>
+
+            <!-- Input Group Password -->
+            <div class="input-group">
+                <span class="input-label">Password :</span>
+                <input type="password" id="admin-password" name="password" required>
+            </div>
+
+            <!-- Tombol Login (Warna Hijau) -->
+            <button type="submit" class="btn-login btn-submit">
+                Login
+            </button>
+        </form>
+
+        <!-- Link Navigasi -->
+        <div class="form-footer">
+
+        </div>
+
+        <div class="admin-footer">
+            <a href="index.html" id="link-to-user">Masuk sebagai penyewa</a>
+        </div>
+
+        <script>
+            document.getElementById('admin-login-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const u = document.getElementById('admin-username').value.trim();
+                const p = document.getElementById('admin-password').value.trim();
+
+                if (u === 'abiM' && p === 'admin') {
+                    alert('Login Admin Berhasil!');
+                    localStorage.setItem('namaAdmin', u);
+                    window.location.href = 'dashboard_admin.html';
+                } else {
+                    alert('Username atau Password Admin salah!');
+                }
+            });
+        </script>
+</body>
+
+
+</html>

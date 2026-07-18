@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style-dashboard-penyewa.css">
+    <title>Dashboard Penyewa</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <h2 class="sidebar-tittle">PENYEWA</h2>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard_penyewa.html" class="active"><img src="dashboard.png" class="sidebar-icon"
+                            alt="Dashboard"> Dashboard</a></li>
+                <li><a href="data_sewa.html"><img src="property.png" class="sidebar-icon" alt="Data Sewa"> Data Sewa</a>
+                </li>
+                <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><img src="dashboard.png"
+                            class="sidebar-icon" alt="Dashboard Admin"> Dashboard Admin</a></li>
+            </ul>
+        </aside>
+
+        <div class="main-layout">
+            <header class="top-header">
+                <div class="header-right">
+                    <a href="index.html" class="btn-logout-header">
+                        <span class="icon">🚪</span> Keluar
+                    </a>
+                    <span class="header-divider">|</span>
+                    <div class="header-profile">
+                        <span class="header-username" id="tenant-top-name">Penyewa</span>
+                        <span class="header-user-icon" id="tenant-top-avatar">P</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h2>Selamat Datang, <span id="tenant-greeting-name">Penyewa</span></h2>
+                        <p>Kelola sewaan kios Anda dan lakukan konfirmasi pembayaran dengan mudah.</p>
+                    </div>
+                    <div class="welcome-date" id="tenant-current-date">
+                        -
+                    </div>
+                </div>
+
+                <div class="nama-box">
+                    <h2 class="nama-box-tittle">Nama</h2>
+                    <p id="nama-penyewa">-</p>
+                </div>
+
+                <div class="sewa-box">
+                    <h2 class="sewa-box-tittle">Kios Yang disewa</h2>
+                    <p class="sewa-box-value" id="kios-disewa-count">0</p>
+                </div>
+
+                <!-- Form Isi Penyewaan Kios (Muncul jika tombol "Sewa Kios Ini" diklik) -->
+                <div class="form-sewa-box" id="form-input-sewa-box" style="display: none; margin-top: 30px;">
+                    <h2>Isi Form Penyewaan Kios</h2>
+                    <form id="form-penyewaan-kios">
+                        <div class="form-group-sewa">
+                            <label>Nama Penyewa:</label>
+                            <input type="text" id="sewa-nama" readonly>
+                        </div>
+                        <div class="form-group-sewa">
+                            <label>Nomor HP:</label>
+                            <input type="tel" id="sewa-hp" placeholder="Contoh: 0877xxxxxxxx" required>
+                        </div>
+                        <div class="form-group-sewa">
+                            <label>Pilih Slot Kios:</label>
+                            <select id="sewa-slot" required>
+                                <!-- Diisi dinamis -->
+                            </select>
+                        </div>
+                        <div class="form-group-sewa">
+                            <label>Tanggal Mulai:</label>
+                            <input type="date" id="sewa-mulai" required>
+                        </div>
+                        <div class="form-group-sewa">
+                            <label>Durasi Sewa:</label>
+                            <select id="sewa-durasi" required>
+                                <option value="1">1 Tahun</option>
+                                <option value="2">2 Tahun</option>
+                                <option value="3">3 Tahun</option>
+                                <option value="5">5 Tahun</option>
+                                <option value="10">10 Tahun</option>
+                                <option value="30">30 Tahun</option>
+                            </select>
+                        </div>
+                        <div class="form-group-sewa">
+                            <label>Harga Sewa Per Tahun:</label>
+                            <input type="text" id="sewa-harga" value="Rp. 20.000.000" readonly>
+                        </div>
+                        <button type="submit" class="btn-submit-sewa">Simpan & Hubungi WhatsApp Admin</button>
+                    </form>
+                </div>
+
+                <!-- Header Informasi Kios -->
+                <h1 style="margin-top: 50px; text-align: center; margin-bottom: 20px;">Informasi Kios</h1>
+
+                <div class="kios-grid-container">
+                    <!-- Kios 1 -->
+                    <div class="informasi-kontrakan" id="kios-card-1">
+                        <img src="kios-1.jpeg" class="informasi-kontrakan-bg" alt="Foto Kios 1">
+                        <div class="kontrakan-info">
+                            <h2 class="nama-kios">Kios 1</h2>
+                            <p class="detail-kios">Nama Penyewa : <span id="detail-nama-1">-</span></p>
+                            <p class="detail-kios">Tanggal Mulai : <span id="detail-mulai-1">-</span></p>
+                            <p class="detail-kios">Tanggal Selesai : <span id="detail-selesai-1">-</span></p>
+                            <p class="detail-kios">Status Pembayaran : <span id="detail-pembayaran-1">-</span></p>
+                            <p class="detail-kios">Sisa Waktu : <span id="detail-sisa-1">-</span></p>
+                            <div id="btn-container-1" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Kios 2 -->
+                    <div class="informasi-kontrakan" id="kios-card-2">
+                        <img src="kios-2.jpeg" class="informasi-kontrakan-bg" alt="Foto Kios 2">
+                        <div class="kontrakan-info">
+                            <h2 class="nama-kios">Kios 2</h2>
+                            <p class="detail-kios">Nama Penyewa : <span id="detail-nama-2">-</span></p>
+                            <p class="detail-kios">Tanggal Mulai : <span id="detail-mulai-2">-</span></p>
+                            <p class="detail-kios">Tanggal Selesai : <span id="detail-selesai-2">-</span></p>
+                            <p class="detail-kios">Status Pembayaran : <span id="detail-pembayaran-2">-</span></p>
+                            <p class="detail-kios">Sisa Waktu : <span id="detail-sisa-2">-</span></p>
+                            <div id="btn-container-2" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Kios 3 -->
+                    <div class="informasi-kontrakan" id="kios-card-3">
+                        <img src="kios-3.jpeg" class="informasi-kontrakan-bg" alt="Foto Kios 3">
+                        <div class="kontrakan-info">
+                            <h2 class="nama-kios">Kios 3</h2>
+                            <p class="detail-kios">Nama Penyewa : <span id="detail-nama-3">-</span></p>
+                            <p class="detail-kios">Tanggal Mulai : <span id="detail-mulai-3">-</span></p>
+                            <p class="detail-kios">Tanggal Selesai : <span id="detail-selesai-3">-</span></p>
+                            <p class="detail-kios">Status Pembayaran : <span id="detail-pembayaran-3">-</span></p>
+                            <p class="detail-kios">Sisa Waktu : <span id="detail-sisa-3">-</span></p>
+                            <div id="btn-container-3" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Kios 4 -->
+                    <div class="informasi-kontrakan" id="kios-card-4">
+                        <img src="images-kios.jpg" class="informasi-kontrakan-bg" alt="Foto Kios 4">
+                        <div class="kontrakan-info">
+                            <h2 class="nama-kios">Kios 4</h2>
+                            <p class="detail-kios">Nama Penyewa : <span id="detail-nama-4">-</span></p>
+                            <p class="detail-kios">Tanggal Mulai : <span id="detail-mulai-4">-</span></p>
+                            <p class="detail-kios">Tanggal Selesai : <span id="detail-selesai-4">-</span></p>
+                            <p class="detail-kios">Status Pembayaran : <span id="detail-pembayaran-4">-</span></p>
+                            <p class="detail-kios">Sisa Waktu : <span id="detail-sisa-4">-</span></p>
+                            <div id="btn-container-4" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </main>
+        </div>
+
+        <!-- Panggil shared.js database lokal dan utilitas -->
+        <script src="shared.js"></script>
+        <script>
+            // Ambil data dari localStorage
+            const namaTersimpan = localStorage.getItem('namaPenyewa');
+
+            if (!namaTersimpan) {
+                // Jika tidak ada session user, kembalikan ke login
+                window.location.href = 'index.html';
+            } else {
+                // Tampilkan nama di profil, greeting & top header
+                document.getElementById('nama-penyewa').textContent = namaTersimpan;
+                document.getElementById('sewa-nama').value = namaTersimpan;
+                document.getElementById('tenant-top-name').textContent = namaTersimpan;
+                document.getElementById('tenant-greeting-name').textContent = namaTersimpan;
+                if (namaTersimpan.trim().length > 0) {
+                    document.getElementById('tenant-top-avatar').textContent = namaTersimpan.trim().charAt(0).toUpperCase();
+                }
+
+                // Tampilkan tombol Dashboard Admin jika login sebagai admin
+                if (namaTersimpan === 'abiM') {
+                    document.getElementById('admin-link-item').style.display = 'block';
+                }
+
+                // Tampilkan tanggal hari ini
+                const opsiDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const hariIni = new Date().toLocaleDateString('id-ID', opsiDate);
+                document.getElementById('tenant-current-date').textContent = hariIni;
+
+                // Muat data kios secara asinkron
+                async function initDashboard() {
+                    const kiosList = await getKiosData();
+
+                    // Hitung jumlah kios yang disewa oleh user ini
+                    const sewaSaya = kiosList.filter(k => k.nama && k.nama.toLowerCase() === namaTersimpan.toLowerCase());
+                    document.getElementById('kios-disewa-count').textContent = sewaSaya.length;
+
+                    // Update informasi Kios 1 s/d Kios 4 secara statis menggunakan elemen HTML yang sama persis stylingnya
+                    kiosList.forEach(k => {
+                        const slot = k.slot;
+                        const isMilikSaya = k.nama && k.nama.toLowerCase() === namaTersimpan.toLowerCase();
+                        const isKosong = !k.nama || k.nama.trim() === '';
+
+                        const elNama = document.getElementById(`detail-nama-${slot}`);
+                        const elMulai = document.getElementById(`detail-mulai-${slot}`);
+                        const elSelesai = document.getElementById(`detail-selesai-${slot}`);
+                        const elPembayaran = document.getElementById(`detail-pembayaran-${slot}`);
+                        const elSisa = document.getElementById(`detail-sisa-${slot}`);
+                        const btnContainer = document.getElementById(`btn-container-${slot}`);
+
+                        btnContainer.innerHTML = ''; // Kosongkan tombol default
+
+                        if (isKosong) {
+                            elNama.textContent = "Tersedia (Kosong)";
+                            elNama.style.color = "#888";
+                            elNama.style.fontStyle = "italic";
+                            elMulai.textContent = "-";
+                            elSelesai.textContent = "-";
+                            elPembayaran.textContent = "-";
+                            elSisa.textContent = "-";
+
+                            // Tombol Sewa Kios Ini
+                            const btnSewa = document.createElement('a');
+                            btnSewa.href = "#";
+                            btnSewa.className = "btn-action-bayar";
+                            btnSewa.textContent = "Sewa Kios Ini";
+                            btnSewa.addEventListener('click', function (e) {
+                                e.preventDefault();
+
+                                // Cek apakah user sudah sewa kios lain
+                                if (sewaSaya.length > 0) {
+                                    alert('Anda sudah memiliki sewaan aktif. Batas maksimal sewa adalah 1 kios per akun.');
+                                    return;
+                                }
+
+                                // Munculkan form sewa
+                                const formCard = document.getElementById('form-input-sewa-box');
+                                formCard.style.display = "block";
+
+                                const selectSlot = document.getElementById('sewa-slot');
+                                selectSlot.innerHTML = `<option value="${slot}">Kios Slot ${slot}</option>`;
+
+                                // Scroll halus ke form
+                                formCard.scrollIntoView({ behavior: 'smooth' });
+                            });
+                            btnContainer.appendChild(btnSewa);
+
+                        } else {
+                            elNama.textContent = k.nama;
+                            elNama.style.color = "inherit";
+                            elNama.style.fontStyle = "normal";
+                            elMulai.textContent = formatTanggalIndo(k.mulai);
+                            elSelesai.textContent = formatTanggalIndo(k.selesai);
+                            elPembayaran.textContent = k.statusPembayaran;
+
+                            const sisaWaktuStr = hitungSisaWaktu(k.selesai);
+                            elSisa.textContent = sisaWaktuStr;
+
+                            if (isMilikSaya) {
+                                // Tombol Bayar Sewa
+                                const btnBayar = document.createElement('a');
+                                btnBayar.href = "#";
+                                btnBayar.className = "btn-action-bayar";
+                                btnBayar.textContent = "Bayar Sewa";
+                                btnBayar.addEventListener('click', function (e) {
+                                    e.preventDefault();
+                                    const pesan = `Halo Pak/Ibu, saya ${k.nama} ingin mengonfirmasi pembayaran sewa Kios Slot ${k.slot}. Detail Sewa:\n- Tanggal Mulai: ${formatTanggalIndo(k.mulai)}\n- Tanggal Selesai: ${formatTanggalIndo(k.selesai)}\n- Harga: ${k.harga}\n- Status: ${k.statusPembayaran}`;
+                                    bukaWhatsAppWeb(WHATSAPP_ADMIN, pesan);
+                                });
+
+                                // Tombol Komplain
+                                const btnKomplain = document.createElement('a');
+                                btnKomplain.href = "#";
+                                btnKomplain.className = "btn-action-komplain";
+                                btnKomplain.textContent = "Komplain";
+                                btnKomplain.addEventListener('click', function (e) {
+                                    e.preventDefault();
+                                    const pesan = `Halo Pak/Ibu, saya ${k.nama} (penyewa Kios Slot ${k.slot}) ingin menyampaikan keluhan/komplain terkait kios. Mohon dibantu responnya, terima kasih.`;
+                                    bukaWhatsAppWeb(WHATSAPP_ADMIN, pesan);
+                                });
+
+                                btnContainer.appendChild(btnBayar);
+                                btnContainer.appendChild(btnKomplain);
+                            } else {
+                                // Kios disewa orang lain
+                                const labelDisewa = document.createElement('span');
+                                labelDisewa.textContent = "Disewa oleh orang lain";
+                                labelDisewa.style.color = "#d32f2f";
+                                labelDisewa.style.fontWeight = "600";
+                                btnContainer.appendChild(labelDisewa);
+                            }
+                        }
+                    });
+                }
+
+                initDashboard();
+            }
+
+            // Event handler submit sewa baru
+            const formSewa = document.getElementById('form-penyewaan-kios');
+            formSewa.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const nama = document.getElementById('sewa-nama').value;
+                const hp = document.getElementById('sewa-hp').value;
+                const slot = document.getElementById('sewa-slot').value;
+                const mulai = document.getElementById('sewa-mulai').value;
+                const durasi = document.getElementById('sewa-durasi').value;
+                const harga = document.getElementById('sewa-harga').value;
+
+                if (!slot) {
+                    alert('Maaf, tidak ada slot kios kosong tersedia.');
+                    return;
+                }
+
+                // Hitung tanggal selesai
+                const selesai = hitungTanggalSelesai(mulai, durasi);
+
+                // Ambil data kios, update slot yang dipilih
+                const kiosList = await getKiosData();
+                const idx = kiosList.findIndex(k => k.slot === slot);
+                if (idx !== -1) {
+                    kiosList[idx] = {
+                        slot: slot,
+                        nama: nama,
+                        hp: hp,
+                        mulai: mulai,
+                        durasi: durasi,
+                        selesai: selesai,
+                        statusPembayaran: "Belum Lunas", // Default baru daftar
+                        harga: harga
+                    };
+                    await saveKiosData(kiosList);
+
+                    // Tambah ke riwayat penyewaan sebagai sewaan baru
+                    const riwayat = await getRiwayatData();
+                    riwayat.push({
+                        slot: slot,
+                        nama: nama,
+                        hp: hp,
+                        mulai: mulai,
+                        durasi: `${durasi} Tahun`,
+                        selesai: selesai,
+                        status: "Daftar Baru (Belum Lunas)",
+                        tanggalAksi: new Date().toISOString().split('T')[0]
+                    });
+                    await saveRiwayatData(riwayat);
+
+                    alert('Pendaftaran sewa berhasil disimpan! Anda akan diarahkan ke WhatsApp Admin untuk konfirmasi pembayaran.');
+
+                    // Redirect ke WhatsApp Admin
+                    const pesan = `Halo Pak/Ibu, saya ${nama} baru saja mendaftar sewa Kios Slot ${slot} di website.\nDetail Sewa:\n- Nomor HP: ${hp}\n- Tanggal Mulai: ${formatTanggalIndo(mulai)}\n- Durasi: ${durasi} Tahun\n- Tanggal Selesai: ${formatTanggalIndo(selesai)}\n- Harga Sewa: ${harga}\n- Status: Belum Lunas.\n\nSaya ingin mengonfirmasi metode pembayaran sewa. Terima kasih.`;
+                    bukaWhatsAppWeb(WHATSAPP_ADMIN, pesan);
+
+                    // Reload halaman untuk mengupdate tampilan dashboard
+                    window.location.reload();
+                }
+            });
+        </script>
+    </div> <!-- Close main-layout -->
+    </div> <!-- Close dashboard-wrapper -->
+</body>
+
+</html>

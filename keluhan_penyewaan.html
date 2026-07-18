@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keluhan Penyewaan Kios</title>
+    <link rel="stylesheet" href="style-keluhan-penyewaan.css">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <h2 class="sidebar-tittle">PENYEWA</h2>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard_penyewa.html"><span class="icon">📊</span> Dashboard</a></li>
+                <li><a href="data_sewa.html"><span class="icon">📋</span> Data Sewa</a></li>
+                <li><a href="keluhan_penyewaan.html" class="active"><span class="icon">💬</span> Keluhan</a></li>
+                <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><span class="icon">⚙️</span> Dashboard Admin</a></li>
+            </ul>
+        </aside>
+        
+        <div class="main-layout">
+            <header class="top-header">
+                <div class="header-right">
+                    <a href="index.html" class="btn-logout-header">
+                        <span class="icon">🚪</span> Keluar
+                    </a>
+                    <span class="header-divider">|</span>
+                    <div class="header-profile">
+                        <span class="header-username" id="tenant-top-name">Penyewa</span>
+                        <span class="header-user-icon" id="tenant-top-avatar">P</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <h2>Keluhan Penyewaan Kios</h2>
+                <p style="margin-bottom: 24px; color: #666; text-align: left;">Kirimkan keluhan atau kendala terkait kios Anda langsung ke WhatsApp Admin.</p>
+                
+                <div class="keluhan-form-box">
+                    <form id="form-keluhan">
+                        <div class="form-group-keluhan">
+                            <label>Nama Penyewa:</label>
+                            <input type="text" id="keluhan-nama" readonly>
+                        </div>
+                        <div class="form-group-keluhan">
+                            <label>Kios Slot Anda:</label>
+                            <input type="text" id="keluhan-slot" readonly placeholder="Mencari slot sewa aktif...">
+                        </div>
+                        <div class="form-group-keluhan">
+                            <label>Subjek Keluhan:</label>
+                            <input type="text" id="keluhan-subjek" placeholder="Contoh: Lampu Kios Padam, Atap Bocor" required>
+                        </div>
+                        <div class="form-group-keluhan">
+                            <label>Detail Kendala/Keluhan:</label>
+                            <textarea id="keluhan-deskripsi" rows="5" placeholder="Jelaskan secara rinci kendala yang Anda alami pada kios..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit-keluhan">Kirim Keluhan via WhatsApp</button>
+                    </form>
+                </div>
+            </main>
+        </div> <!-- Close main-layout -->
+    </div> <!-- Close dashboard-wrapper -->
+
+    <script src="shared.js"></script>
+    <script>
+        const namaTersimpan = localStorage.getItem('namaPenyewa');
+        if (!namaTersimpan) {
+            window.location.href = 'index.html';
+        } else {
+            // Set nama dan avatar di top header
+            document.getElementById('tenant-top-name').textContent = namaTersimpan;
+            if (namaTersimpan.trim().length > 0) {
+                document.getElementById('tenant-top-avatar').textContent = namaTersimpan.trim().charAt(0).toUpperCase();
+            }
+
+            // Tampilkan tombol Dashboard Admin jika login sebagai admin
+            if (namaTersimpan === 'abiM') {
+                document.getElementById('admin-link-item').style.display = 'block';
+            }
+
+            document.getElementById('keluhan-nama').value = namaTersimpan;
+
+            // Cari slot sewa aktif penyewa secara asinkron
+            async function initKeluhan() {
+                const kiosList = await getKiosData();
+                const sewaSaya = kiosList.find(k => k.nama && k.nama.toLowerCase() === namaTersimpan.toLowerCase());
+                
+                const slotInput = document.getElementById('keluhan-slot');
+                if (sewaSaya) {
+                    slotInput.value = `Slot ${sewaSaya.slot}`;
+                } else {
+                    slotInput.value = "Belum memiliki sewaan aktif";
+                    slotInput.style.color = "#d32f2f";
+                }
+            }
+            initKeluhan();
+
+            // Submit keluhan
+            document.getElementById('form-keluhan').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const slotText = slotInput.value;
+                const subjek = document.getElementById('keluhan-subjek').value.trim();
+                const deskripsi = document.getElementById('keluhan-deskripsi').value.trim();
+
+                const pesan = `Halo Pak/Ibu Admin, saya ${namaTersimpan} (${slotText}) ingin menyampaikan keluhan.\n\n*Subjek:* ${subjek}\n*Detail Keluhan:* ${deskripsi}\n\nMohon bantuannya, terima kasih.`;
+                
+                bukaWhatsAppWeb(WHATSAPP_ADMIN, pesan);
+            });
+        }
+    </script>
+</body>
+
+</html>
