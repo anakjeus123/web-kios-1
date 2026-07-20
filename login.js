@@ -49,6 +49,7 @@ loginForm.addEventListener('submit', async function (event) {
     const client = getSupabaseClient();
     let akunCocok = null;
     let databaseTerhubung = false;
+    let userExist = false;
 
     if (client) {
         try {
@@ -63,6 +64,7 @@ loginForm.addEventListener('submit', async function (event) {
             databaseTerhubung = true; // Koneksi ke Supabase berhasil
 
             if (data && data.length > 0) {
+                userExist = true; // Username ditemukan
                 // Cari password yang cocok (case-sensitive untuk password)
                 const user = data.find(u => u.password === passwordInput);
                 if (user) {
@@ -78,6 +80,10 @@ loginForm.addEventListener('submit', async function (event) {
     // Fallback ke localStorage HANYA JIKA tidak menggunakan Supabase atau koneksi Supabase gagal
     if (!client || (!databaseTerhubung && !akunCocok)) {
         const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
+        const userExistsLocal = akunList.some(a => a.username.toLowerCase() === usernameInput.toLowerCase());
+        if (userExistsLocal) {
+            userExist = true;
+        }
         const localUser = akunList.find(a =>
             a.username.toLowerCase() === usernameInput.toLowerCase() &&
             a.password === passwordInput
@@ -92,7 +98,11 @@ loginForm.addEventListener('submit', async function (event) {
         localStorage.setItem('namaPenyewa', akunCocok.username);
         window.location.href = 'dashboard_penyewa.html';
     } else {
-        alert('Username atau Password salah! (Akun Anda belum terdaftar atau kredensial salah)');
+        if (!userExist) {
+            alert('Akun belum terdaftar! Silakan buat akun baru terlebih dahulu dengan mengeklik "Daftar Sekarang" di bawah.');
+        } else {
+            alert('Password salah! Harap periksa kembali password Anda.');
+        }
     }
 });
 
