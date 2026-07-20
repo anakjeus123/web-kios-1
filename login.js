@@ -48,6 +48,7 @@ loginForm.addEventListener('submit', async function (event) {
 
     const client = getSupabaseClient();
     let akunCocok = null;
+    let databaseTerhubung = false;
 
     if (client) {
         try {
@@ -58,6 +59,9 @@ loginForm.addEventListener('submit', async function (event) {
                 .ilike('username', usernameInput);
             
             if (error) throw error;
+            
+            databaseTerhubung = true; // Koneksi ke Supabase berhasil
+
             if (data && data.length > 0) {
                 // Cari password yang cocok (case-sensitive untuk password)
                 const user = data.find(u => u.password === passwordInput);
@@ -67,11 +71,12 @@ loginForm.addEventListener('submit', async function (event) {
             }
         } catch (err) {
             console.error("Gagal verifikasi login via Supabase, mencoba localStorage:", err);
+            databaseTerhubung = false; // Gagalkan koneksi untuk memicu fallback
         }
     }
 
-    // Fallback ke localStorage jika tidak menggunakan Supabase atau Supabase gagal
-    if (!client || !akunCocok) {
+    // Fallback ke localStorage HANYA JIKA tidak menggunakan Supabase atau koneksi Supabase gagal
+    if (!client || (!databaseTerhubung && !akunCocok)) {
         const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
         const localUser = akunList.find(a =>
             a.username.toLowerCase() === usernameInput.toLowerCase() &&
