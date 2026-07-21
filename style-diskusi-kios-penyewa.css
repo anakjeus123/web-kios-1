@@ -1,0 +1,185 @@
+/* =========================================================
+   STYLE DISKUSI KIOS - PENYEWA
+   ========================================================= */
+
+@import url('style-dashboard-penyewa.css');
+
+/* Forum Container Cards */
+.forum-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Tombol Buat Topik */
+.btn-add-topic {
+    background-color: #28c25a;
+    color: white;
+    padding: 12px 24px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    box-shadow: 0 4px 12px rgba(40, 194, 90, 0.3);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-add-topic:hover {
+    background-color: #22a84d;
+}
+
+.btn-add-topic:active {
+    transform: scale(0.98);
+}
+
+.btn-cancel-topic {
+    background-color: #e0e0e0;
+    color: #333333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cancel-topic:hover {
+    background-color: #d5d5d5;
+}
+
+/* Tabel V-Class Style */
+.forum-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.forum-table th {
+    background-color: #f5f5f5;
+    color: #333333;
+    text-align: left;
+    padding: 14px 18px;
+    font-size: 14px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.forum-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #eeeeee;
+    font-size: 14px;
+    color: #444444;
+}
+
+.forum-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Link Judul Topik */
+.topic-link {
+    color: #0288d1;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.topic-link:hover {
+    text-decoration: underline;
+}
+
+/* Role Badges */
+.badge-role {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.badge-admin {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.badge-penyewa {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Form Tambah Topik Box */
+.form-topic-box {
+    background: #ffffff;
+    border-radius: 10px;
+    border-left: 4px solid #28c25a;
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.form-group-topic {
+    margin-bottom: 16px;
+}
+
+.form-group-topic label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333333;
+}
+
+.form-group-topic input,
+.form-group-topic textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-group-topic input:focus,
+.form-group-topic textarea:focus {
+    border-color: #28c25a;
+    box-shadow: 0 0 0 3px rgba(40, 194, 90, 0.15);
+}
+
+/* Card Balasan & Reply Nested */
+.reply-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eeeeee;
+}
+
+.reply-nested {
+    margin-left: 36px;
+    border-left: 4px solid #28c25a;
+    background: #f9fdfa;
+}
+
+/* Peringatan jika Penyewa belum sewa kios */
+.no-kios-warning {
+    background-color: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #e65100;
+}
+
+.no-kios-warning h3 {
+    margin-bottom: 6px;
+    font-size: 16px;
+}
+
+.no-kios-warning p {
+    font-size: 14px;
+    margin: 0;
+}

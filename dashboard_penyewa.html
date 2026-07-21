@@ -20,6 +20,7 @@
                             alt="Dashboard"> Dashboard</a></li>
                 <li><a href="data_sewa.html"><img src="property.png" class="sidebar-icon" alt="Data Sewa"> Data Sewa</a>
                 </li>
+                <li><a href="diskusi_kios.html"><img src="property.png" class="sidebar-icon" alt="Diskusi Kios"> Diskusi Kios</a></li>
                 <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><img src="dashboard.png"
                             class="sidebar-icon" alt="Dashboard Admin"> Dashboard Admin</a></li>
             </ul>
@@ -111,6 +112,8 @@
                         <img src="kios-1.jpeg" class="informasi-kontrakan-bg" alt="Foto Kios 1">
                         <div class="kontrakan-info">
                             <h2 class="nama-kios">Kios 1</h2>
+                            <p class="detail-kios">Lokasi : <span id="detail-lokasi-1">-</span></p>
+                            <p class="detail-kios">Luas : <span id="detail-luas-1">-</span></p>
                             <p class="detail-kios">Nama Penyewa : <span id="detail-nama-1">-</span></p>
                             <p class="detail-kios">Tanggal Mulai : <span id="detail-mulai-1">-</span></p>
                             <p class="detail-kios">Tanggal Selesai : <span id="detail-selesai-1">-</span></p>
@@ -125,6 +128,8 @@
                         <img src="kios-2.jpeg" class="informasi-kontrakan-bg" alt="Foto Kios 2">
                         <div class="kontrakan-info">
                             <h2 class="nama-kios">Kios 2</h2>
+                            <p class="detail-kios">Lokasi : <span id="detail-lokasi-2">-</span></p>
+                            <p class="detail-kios">Luas : <span id="detail-luas-2">-</span></p>
                             <p class="detail-kios">Nama Penyewa : <span id="detail-nama-2">-</span></p>
                             <p class="detail-kios">Tanggal Mulai : <span id="detail-mulai-2">-</span></p>
                             <p class="detail-kios">Tanggal Selesai : <span id="detail-selesai-2">-</span></p>
@@ -139,6 +144,8 @@
                         <img src="kios-3.jpeg" class="informasi-kontrakan-bg" alt="Foto Kios 3">
                         <div class="kontrakan-info">
                             <h2 class="nama-kios">Kios 3</h2>
+                            <p class="detail-kios">Lokasi : <span id="detail-lokasi-3">-</span></p>
+                            <p class="detail-kios">Luas : <span id="detail-luas-3">-</span></p>
                             <p class="detail-kios">Nama Penyewa : <span id="detail-nama-3">-</span></p>
                             <p class="detail-kios">Tanggal Mulai : <span id="detail-mulai-3">-</span></p>
                             <p class="detail-kios">Tanggal Selesai : <span id="detail-selesai-3">-</span></p>
@@ -153,6 +160,8 @@
                         <img src="images-kios.jpg" class="informasi-kontrakan-bg" alt="Foto Kios 4">
                         <div class="kontrakan-info">
                             <h2 class="nama-kios">Kios 4</h2>
+                            <p class="detail-kios">Lokasi : <span id="detail-lokasi-4">-</span></p>
+                            <p class="detail-kios">Luas : <span id="detail-luas-4">-</span></p>
                             <p class="detail-kios">Nama Penyewa : <span id="detail-nama-4">-</span></p>
                             <p class="detail-kios">Tanggal Mulai : <span id="detail-mulai-4">-</span></p>
                             <p class="detail-kios">Tanggal Selesai : <span id="detail-selesai-4">-</span></p>
@@ -186,8 +195,16 @@
                     document.getElementById('tenant-top-avatar').textContent = namaTersimpan.trim().charAt(0).toUpperCase();
                 }
 
+                // Event Logout
+                document.querySelector('.btn-logout-header').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('namaPenyewa');
+                    localStorage.removeItem('namaAdmin');
+                    window.location.href = 'index.html';
+                });
+
                 // Tampilkan tombol Dashboard Admin jika login sebagai admin
-                if (namaTersimpan === 'abiM') {
+                if (namaTersimpan.toLowerCase() === 'abim') {
                     document.getElementById('admin-link-item').style.display = 'block';
                 }
 
@@ -211,6 +228,8 @@
                         const isKosong = !k.nama || k.nama.trim() === '';
 
                         const elNama = document.getElementById(`detail-nama-${slot}`);
+                        const elLokasi = document.getElementById(`detail-lokasi-${slot}`);
+                        const elLuas = document.getElementById(`detail-luas-${slot}`);
                         const elMulai = document.getElementById(`detail-mulai-${slot}`);
                         const elSelesai = document.getElementById(`detail-selesai-${slot}`);
                         const elPembayaran = document.getElementById(`detail-pembayaran-${slot}`);
@@ -218,6 +237,20 @@
                         const btnContainer = document.getElementById(`btn-container-${slot}`);
 
                         btnContainer.innerHTML = ''; // Kosongkan tombol default
+
+                        // Render Lokasi dan Luas
+                        elLokasi.textContent = k.lokasi;
+                        elLuas.textContent = k.luas;
+
+                        // Tombol Diskusi Komentar (Satu gaya dengan tombol Komplain sebelumnya: #333333)
+                        const btnDiskusi = document.createElement('a');
+                        btnDiskusi.href = "#";
+                        btnDiskusi.className = "btn-action-komplain";
+                        btnDiskusi.textContent = "Diskusi komentar";
+                        btnDiskusi.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            openDiskusiModal(k.slot);
+                        });
 
                         if (isKosong) {
                             elNama.textContent = "Tersedia (Kosong)";
@@ -253,6 +286,7 @@
                                 formCard.scrollIntoView({ behavior: 'smooth' });
                             });
                             btnContainer.appendChild(btnSewa);
+                            btnContainer.appendChild(btnDiskusi);
 
                         } else {
                             elNama.textContent = k.nama;
@@ -277,26 +311,73 @@
                                     bukaWhatsAppWeb(WHATSAPP_ADMIN, pesan);
                                 });
 
-                                // Tombol Komplain
-                                const btnKomplain = document.createElement('a');
-                                btnKomplain.href = "#";
-                                btnKomplain.className = "btn-action-komplain";
-                                btnKomplain.textContent = "Komplain";
-                                btnKomplain.addEventListener('click', function (e) {
-                                    e.preventDefault();
-                                    const pesan = `Halo Pak/Ibu, saya ${k.nama} (penyewa Kios Slot ${k.slot}) ingin menyampaikan keluhan/komplain terkait kios. Mohon dibantu responnya, terima kasih.`;
-                                    bukaWhatsAppWeb(WHATSAPP_ADMIN, pesan);
-                                });
-
                                 btnContainer.appendChild(btnBayar);
-                                btnContainer.appendChild(btnKomplain);
+                                btnContainer.appendChild(btnDiskusi);
+
+                                // Fitur Upload Bukti Pembayaran
+                                if (k.statusPembayaran !== 'Lunas') {
+                                    const uploadDiv = document.createElement('div');
+                                    uploadDiv.style.marginTop = '15px';
+                                    uploadDiv.style.borderTop = '1px dashed #ccc';
+                                    uploadDiv.style.paddingTop = '10px';
+
+                                    const uploadLabel = document.createElement('label');
+                                    uploadLabel.textContent = 'Upload Bukti Pembayaran (Gambar):';
+                                    uploadLabel.style.fontSize = '12px';
+                                    uploadLabel.style.fontWeight = 'bold';
+                                    uploadLabel.style.display = 'block';
+                                    uploadLabel.style.marginBottom = '5px';
+
+                                    const fileInput = document.createElement('input');
+                                    fileInput.type = 'file';
+                                    fileInput.accept = 'image/*';
+                                    fileInput.style.fontSize = '12px';
+                                    fileInput.addEventListener('change', async function (e) {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onload = async function (evt) {
+                                                const base64String = evt.target.result;
+                                                const updatedList = await getKiosData();
+                                                const idxKios = updatedList.findIndex(item => item.slot === k.slot);
+                                                if (idxKios !== -1) {
+                                                    updatedList[idxKios].buktiPembayaran = base64String;
+                                                    await saveKiosData(updatedList);
+                                                    alert('Bukti pembayaran berhasil diunggah!');
+                                                    window.location.reload();
+                                                }
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    });
+
+                                    uploadDiv.appendChild(uploadLabel);
+                                    uploadDiv.appendChild(fileInput);
+                                    btnContainer.appendChild(uploadDiv);
+                                }
+
+                                if (k.buktiPembayaran) {
+                                    const btnLihatBukti = document.createElement('button');
+                                    btnLihatBukti.textContent = '🔍 Lihat Bukti Bayar';
+                                    btnLihatBukti.className = 'btn-action-komplain';
+                                    btnLihatBukti.style.background = '#0288d1';
+                                    btnLihatBukti.style.marginTop = '10px';
+                                    btnLihatBukti.addEventListener('click', function (e) {
+                                        e.preventDefault();
+                                        showBuktiBayarModal(k.buktiPembayaran);
+                                    });
+                                    btnContainer.appendChild(btnLihatBukti);
+                                }
+
                             } else {
                                 // Kios disewa orang lain
                                 const labelDisewa = document.createElement('span');
                                 labelDisewa.textContent = "Disewa oleh orang lain";
                                 labelDisewa.style.color = "#d32f2f";
                                 labelDisewa.style.fontWeight = "600";
+                                labelDisewa.style.display = "inline-block";
                                 btnContainer.appendChild(labelDisewa);
+                                btnContainer.appendChild(btnDiskusi);
                             }
                         }
                     });
@@ -366,8 +447,211 @@
                 }
             });
         </script>
-    </div> <!-- Close main-layout -->
-    </div> <!-- Close dashboard-wrapper -->
+
+    <!-- Modal Dialog Lihat Bukti Pembayaran -->
+    <div id="modal-bukti" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width: 500px; text-align: center; background:#fff; padding:24px; border-radius:10px; position:relative; margin: 10% auto;">
+            <span class="close-modal" id="close-bukti" style="position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer;">&times;</span>
+            <h2 style="margin-bottom:15px;">Bukti Pembayaran</h2>
+            <img id="img-bukti-preview" style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" src="" alt="Bukti Pembayaran">
+        </div>
+    </div>
+
+    <!-- Modal Dialog Forum Diskusi Komentar -->
+    <div id="modal-diskusi" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto; background:#fff; padding:24px; border-radius:10px; position:relative; margin: 5% auto; text-align: left;">
+            <span class="close-modal" id="close-diskusi" style="position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer;">&times;</span>
+            <h2 id="modal-diskusi-title" style="margin-bottom:15px; border-bottom:2px solid #7e57c2; padding-bottom:8px; color:#333;">Forum Diskusi Kios</h2>
+            
+            <div id="komentar-container" style="max-height: 400px; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;">
+                <!-- Komentar & Balasan akan di-render di sini secara nested -->
+            </div>
+            
+            <form id="form-tulis-komentar" style="border-top: 1px solid #eee; padding-top: 15px;">
+                <input type="hidden" id="komentar-parent-id">
+                <div class="form-group" id="replying-label-container" style="display:none; background: #e8f5e9; padding: 10px; border-radius: 6px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size: 13px; color: #2e7d32;">Membalas komentar dari <strong id="replying-to-name"></strong></span>
+                    <button type="button" id="btn-cancel-reply" style="border:none; background:none; color:#d32f2f; cursor:pointer; font-weight:bold; font-size:12px;">Batal</button>
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <textarea id="input-komentar-teks" placeholder="Tulis komentar/diskusi Anda di sini..." rows="3" required style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:14px; resize:vertical; outline:none;"></textarea>
+                </div>
+                <button type="submit" style="background:#28c25a; color:#fff; border:none; padding:12px 20px; border-radius:6px; font-weight:bold; cursor:pointer; width:100%; font-size:15px;">Kirim Komentar</button>
+            </form>
+        </div>
+    </div>
+
+        <script>
+            // Modal Bukti Bayar handlers
+            function showBuktiBayarModal(base64Image) {
+                document.getElementById('img-bukti-preview').src = base64Image;
+                document.getElementById('modal-bukti').style.display = 'block';
+            }
+            document.getElementById('close-bukti').addEventListener('click', function() {
+                document.getElementById('modal-bukti').style.display = 'none';
+            });
+
+            // Modal Forum Diskusi handlers
+            let currentSlotDiskusi = "";
+
+            async function openDiskusiModal(slot) {
+                currentSlotDiskusi = slot;
+                document.getElementById('modal-diskusi-title').textContent = `Forum Diskusi Kios Slot ${slot}`;
+                document.getElementById('komentar-parent-id').value = '';
+                document.getElementById('replying-label-container').style.display = 'none';
+                document.getElementById('modal-diskusi').style.display = 'block';
+                await loadKomentar(slot);
+            }
+
+            document.getElementById('close-diskusi').addEventListener('click', function() {
+                document.getElementById('modal-diskusi').style.display = 'none';
+            });
+
+            document.getElementById('btn-cancel-reply').addEventListener('click', function() {
+                document.getElementById('komentar-parent-id').value = '';
+                document.getElementById('replying-label-container').style.display = 'none';
+            });
+
+            async function loadKomentar(slot) {
+                const list = await getKomentarData(slot);
+                const container = document.getElementById('komentar-container');
+                container.innerHTML = '';
+
+                if (list.length === 0) {
+                    container.innerHTML = `<p style="color: #777; font-style: italic; text-align: center; margin-top: 20px;">Belum ada diskusi di kios ini. Mari mulai berkomentar!</p>`;
+                    return;
+                }
+
+                const rootComments = list.filter(c => !c.parentId);
+                const replies = list.filter(c => c.parentId);
+
+                rootComments.forEach(c => {
+                    const commentEl = createCommentElement(c, false);
+                    container.appendChild(commentEl);
+
+                    const childReplies = replies.filter(r => r.parentId === c.id);
+                    childReplies.forEach(reply => {
+                        const replyEl = createCommentElement(reply, true);
+                        container.appendChild(replyEl);
+                    });
+                });
+            }
+
+            function createCommentElement(c, isReply) {
+                const div = document.createElement('div');
+                div.style.padding = '12px 16px';
+                div.style.borderRadius = '8px';
+                div.style.marginBottom = '12px';
+                div.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+                div.style.boxSizing = 'border-box';
+
+                if (isReply) {
+                    div.style.marginLeft = '40px';
+                    div.style.borderLeft = '4px solid #28c25a';
+                    div.style.background = '#f9f9f9';
+                } else {
+                    div.style.borderLeft = '4px solid #7e57c2';
+                    div.style.background = '#ffffff';
+                    div.style.border = '1px solid #eee';
+                    div.style.borderLeft = '4px solid #7e57c2';
+                }
+
+                const header = document.createElement('div');
+                header.style.display = 'flex';
+                header.style.justifyContent = 'space-between';
+                header.style.fontSize = '12px';
+                header.style.color = '#666';
+                header.style.marginBottom = '8px';
+
+                const author = document.createElement('strong');
+                author.textContent = c.nama;
+                author.style.color = isReply ? '#2e7d32' : '#7e57c2';
+
+                const dateSpan = document.createElement('span');
+                dateSpan.textContent = new Date(c.tanggal).toLocaleString('id-ID');
+
+                header.appendChild(author);
+                header.appendChild(dateSpan);
+
+                const body = document.createElement('div');
+                body.style.fontSize = '14px';
+                body.style.color = '#333';
+                body.style.lineHeight = '1.5';
+
+                if (isReply) {
+                    const reHeader = document.createElement('div');
+                    reHeader.style.fontWeight = 'bold';
+                    reHeader.style.color = '#555';
+                    reHeader.style.fontSize = '12px';
+                    reHeader.style.marginBottom = '4px';
+                    reHeader.textContent = `Re: Diskusi Kios`;
+                    body.appendChild(reHeader);
+                }
+
+                const contentText = document.createElement('p');
+                contentText.textContent = c.pesan;
+                body.appendChild(contentText);
+
+                div.appendChild(header);
+                div.appendChild(body);
+
+                if (!isReply) {
+                    const actions = document.createElement('div');
+                    actions.style.textAlign = 'right';
+                    actions.style.marginTop = '8px';
+
+                    const replyBtn = document.createElement('button');
+                    replyBtn.textContent = 'Reply';
+                    replyBtn.style.background = 'none';
+                    replyBtn.style.border = 'none';
+                    replyBtn.style.color = '#0288d1';
+                    replyBtn.style.fontWeight = 'bold';
+                    replyBtn.style.cursor = 'pointer';
+                    replyBtn.style.fontSize = '12px';
+                    replyBtn.addEventListener('click', function() {
+                        document.getElementById('komentar-parent-id').value = c.id;
+                        document.getElementById('replying-to-name').textContent = c.nama;
+                        document.getElementById('replying-label-container').style.display = 'flex';
+                        document.getElementById('input-komentar-teks').focus();
+                    });
+
+                    actions.appendChild(replyBtn);
+                    div.appendChild(actions);
+                }
+
+                return div;
+            }
+
+            // Submit komentar baru
+            document.getElementById('form-tulis-komentar').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const textInput = document.getElementById('input-komentar-teks');
+                const parentIdInput = document.getElementById('komentar-parent-id');
+                const pesan = textInput.value.trim();
+                const parentId = parentIdInput.value || null;
+
+                if (!pesan) return;
+
+                const commentObj = {
+                    id: Date.now().toString(),
+                    slot: currentSlotDiskusi,
+                    nama: namaTersimpan,
+                    pesan: pesan,
+                    tanggal: new Date().toISOString(),
+                    parentId: parentId
+                };
+
+                await saveKomentarData(commentObj);
+
+                textInput.value = '';
+                parentIdInput.value = '';
+                document.getElementById('replying-label-container').style.display = 'none';
+
+                await loadKomentar(currentSlotDiskusi);
+            });
+</script>
+</div> <!-- Close main-layout -->
+</div> <!-- Close dashboard-wrapper -->
 </body>
 
 </html>

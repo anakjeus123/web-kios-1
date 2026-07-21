@@ -21,9 +21,11 @@
                 <li class="dashboard"><a href="dashboard_admin.html" class="active"><img src="dashboard.png"
                             class="sidebar-icon" alt="Dashboard"> Dashboard</a></li>
                 <li class="data-penyewaan"><a href="data_penyewaan.html"><img src="property.png" class="sidebar-icon"
-                            alt="Data Kontrakan"> Data Kontrakan</a></li>
-                <li class="dashboard-penyewa"><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon"
-                            alt="Dashboard Penyewa"> Dashboard Penyewa</a></li>
+                            alt="Data Kontrakan"> Data Penyewaan Kios</a></li>
+                <li class="diskusi-kios"><a href="diskusi_kios.html?mode=admin"><img src="property.png"
+                            class="sidebar-icon" alt="Diskusi Kios"> Diskusi Kios</a></li>
+                <li class="dashboard-penyewa"><a href="dashboard_penyewa.html"><img src="dashboard.png"
+                            class="sidebar-icon" alt="Dashboard Penyewa"> Dashboard Penyewa</a></li>
             </ul>
         </aside>
 
@@ -79,6 +81,7 @@
                                 <th>Sisa Waktu</th>
                                 <th>Harga Sewa</th>
                                 <th>Status</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tbody-penghuni">
@@ -96,6 +99,14 @@
                 // Tampilkan nama di greeting & top header
                 document.getElementById('admin-top-name').textContent = adminName;
                 document.getElementById('admin-greeting-name').textContent = adminName;
+
+                // Handler Keluar / Logout
+                document.querySelector('.btn-logout-header').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    localStorage.removeItem('namaPenyewa');
+                    localStorage.removeItem('namaAdmin');
+                    window.location.href = 'index.html';
+                });
 
                 // Buat inisial avatar di top header
                 if (adminName.trim().length > 0) {
@@ -119,29 +130,280 @@
                     tbody.innerHTML = '';
 
                     if (terisi.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="9" style="color: #666; font-style: italic; padding: 18px;">Belum ada penghuni kios.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="10" style="color: #666; font-style: italic; padding: 18px; text-align:center;">Belum ada penghuni kios.</td></tr>`;
                     } else {
                         terisi.forEach((k, i) => {
                             const sisa = hitungSisaWaktu(k.selesai);
                             const statusKelas = k.statusPembayaran === 'Lunas' ? 'kotak-aktif' : 'kotak-mati';
+
+                            const btnBuktiHtml = k.buktiPembayaran ? `<button class="btn-bukti-view" data-slot="${k.slot}" style="background-color: #0288d1; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight:600; font-size:12px; margin-right:4px;">🔍 Bukti</button>` : '';
+                            const btnDiskusiHtml = `<button class="btn-diskusi-view" data-slot="${k.slot}" style="background-color: #7e57c2; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight:600; font-size:12px;">💬 Diskusi</button>`;
+
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
-                        <td>${i + 1}</td>
-                        <td>${k.nama}</td>
-                        <td>${k.hp}</td>
-                        <td>${k.slot}</td>
-                        <td>${formatTanggalIndo(k.mulai)}</td>
-                        <td>${formatTanggalIndo(k.selesai)}</td>
-                        <td style="font-weight:600; color:#b85c00;">${sisa}</td>
-                        <td>${k.harga}</td>
-                        <td><span class="${statusKelas}">${k.statusPembayaran}</span></td>
-                    `;
+                                <td>${i + 1}</td>
+                                <td>${k.nama}</td>
+                                <td>${k.hp}</td>
+                                <td>${k.slot}</td>
+                                <td>${formatTanggalIndo(k.mulai)}</td>
+                                <td>${formatTanggalIndo(k.selesai)}</td>
+                                <td style="font-weight:600; color:#b85c00;">${sisa}</td>
+                                <td>${k.harga}</td>
+                                <td><span class="${statusKelas}">${k.statusPembayaran}</span></td>
+                                <td>
+                                    ${btnBuktiHtml}
+                                    ${btnDiskusiHtml}
+                                </td>
+                            `;
                             tbody.appendChild(tr);
                         });
                     }
+
+                    // Register event delegation for table actions
+                    tbody.addEventListener('click', async function (event) {
+                        const target = event.target;
+                        const slot = target.getAttribute('data-slot');
+                        if (!slot) return;
+
+                        const kiosList = await getKiosData();
+                        const idx = kiosList.findIndex(k => k.slot === slot);
+                        if (idx === -1) return;
+
+                        if (target.classList.contains('btn-bukti-view')) {
+                            const k = kiosList[idx];
+                            if (k.buktiPembayaran) {
+                                showBuktiBayarModal(k.buktiPembayaran);
+                            }
+                        }
+
+                        if (target.classList.contains('btn-diskusi-view')) {
+                            openDiskusiModal(slot);
+                        }
+                    });
                 }
                 initDashboard();
+
+                // =========================================================
+                // FITUR MODAL BUKTI BAYAR & FORUM DISKUSI (ADMIN DASHBOARD)
+                // =========================================================
+                const adminSenderName = localStorage.getItem('namaAdmin') || 'Admin';
+
+                function showBuktiBayarModal(base64Image) {
+                    document.getElementById('img-preview-box').src = base64Image;
+                    document.getElementById('modal-bukti-popup').style.display = 'block';
+                }
+
+                document.getElementById('close-bukti-popup').addEventListener('click', function () {
+                    document.getElementById('modal-bukti-popup').style.display = 'none';
+                });
+
+                let currentSlotDiskusi = "";
+
+                async function openDiskusiModal(slot) {
+                    currentSlotDiskusi = slot;
+                    document.getElementById('modal-diskusi-title-popup').textContent = `Forum Diskusi Kios Slot ${slot}`;
+                    document.getElementById('komentar-parent-id-popup').value = '';
+                    document.getElementById('replying-label-container-popup').style.display = 'none';
+                    document.getElementById('modal-diskusi-popup').style.display = 'block';
+                    await loadKomentar(slot);
+                }
+
+                document.getElementById('close-diskusi-popup').addEventListener('click', function () {
+                    document.getElementById('modal-diskusi-popup').style.display = 'none';
+                });
+
+                document.getElementById('btn-cancel-reply-popup').addEventListener('click', function () {
+                    document.getElementById('komentar-parent-id-popup').value = '';
+                    document.getElementById('replying-label-container-popup').style.display = 'none';
+                });
+
+                async function loadKomentar(slot) {
+                    const list = await getKomentarData(slot);
+                    const container = document.getElementById('komentar-container-popup');
+                    container.innerHTML = '';
+
+                    if (list.length === 0) {
+                        container.innerHTML = `<p style="color: #777; font-style: italic; text-align: center; margin-top: 20px;">Belum ada diskusi di kios ini. Mari mulai berkomentar!</p>`;
+                        return;
+                    }
+
+                    const rootComments = list.filter(c => !c.parentId);
+                    const replies = list.filter(c => c.parentId);
+
+                    rootComments.forEach(c => {
+                        const commentEl = createCommentElement(c, false);
+                        container.appendChild(commentEl);
+
+                        const childReplies = replies.filter(r => r.parentId === c.id);
+                        childReplies.forEach(reply => {
+                            const replyEl = createCommentElement(reply, true);
+                            container.appendChild(replyEl);
+                        });
+                    });
+                }
+
+                function createCommentElement(c, isReply) {
+                    const div = document.createElement('div');
+                    div.style.padding = '12px 16px';
+                    div.style.borderRadius = '8px';
+                    div.style.marginBottom = '12px';
+                    div.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+                    div.style.boxSizing = 'border-box';
+
+                    if (isReply) {
+                        div.style.marginLeft = '40px';
+                        div.style.borderLeft = '4px solid #28c25a';
+                        div.style.background = '#f9f9f9';
+                    } else {
+                        div.style.borderLeft = '4px solid #7e57c2';
+                        div.style.background = '#ffffff';
+                        div.style.border = '1px solid #eee';
+                    }
+
+                    const header = document.createElement('div');
+                    header.style.display = 'flex';
+                    header.style.justifyContent = 'space-between';
+                    header.style.fontSize = '12px';
+                    header.style.color = '#666';
+                    header.style.marginBottom = '8px';
+
+                    const author = document.createElement('strong');
+                    author.textContent = c.nama;
+                    author.style.color = isReply ? '#2e7d32' : '#7e57c2';
+
+                    const dateSpan = document.createElement('span');
+                    dateSpan.textContent = new Date(c.tanggal).toLocaleString('id-ID');
+
+                    header.appendChild(author);
+                    header.appendChild(dateSpan);
+
+                    const body = document.createElement('div');
+                    body.style.fontSize = '14px';
+                    body.style.color = '#333';
+                    body.style.lineHeight = '1.5';
+
+                    if (isReply) {
+                        const reHeader = document.createElement('div');
+                        reHeader.style.fontWeight = 'bold';
+                        reHeader.style.color = '#555';
+                        reHeader.style.fontSize = '12px';
+                        reHeader.style.marginBottom = '4px';
+                        reHeader.textContent = `Re: Diskusi Kios`;
+                        body.appendChild(reHeader);
+                    }
+
+                    const contentText = document.createElement('p');
+                    contentText.textContent = c.pesan;
+                    body.appendChild(contentText);
+
+                    div.appendChild(header);
+                    div.appendChild(body);
+
+                    if (!isReply) {
+                        const actions = document.createElement('div');
+                        actions.style.textAlign = 'right';
+                        actions.style.marginTop = '8px';
+
+                        const replyBtn = document.createElement('button');
+                        replyBtn.textContent = 'Reply';
+                        replyBtn.style.background = 'none';
+                        replyBtn.style.border = 'none';
+                        replyBtn.style.color = '#0288d1';
+                        replyBtn.style.fontWeight = 'bold';
+                        replyBtn.style.cursor = 'pointer';
+                        replyBtn.style.fontSize = '12px';
+                        replyBtn.addEventListener('click', function () {
+                            document.getElementById('komentar-parent-id-popup').value = c.id;
+                            document.getElementById('replying-to-name-popup').textContent = c.nama;
+                            document.getElementById('replying-label-container-popup').style.display = 'flex';
+                            document.getElementById('input-komentar-teks-popup').focus();
+                        });
+
+                        actions.appendChild(replyBtn);
+                        div.appendChild(actions);
+                    }
+
+                    return div;
+                }
+
+                document.getElementById('form-tulis-komentar-popup').addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const textInput = document.getElementById('input-komentar-teks-popup');
+                    const parentIdInput = document.getElementById('komentar-parent-id-popup');
+                    const pesan = textInput.value.trim();
+                    const parentId = parentIdInput.value || null;
+
+                    if (!pesan) return;
+
+                    const commentObj = {
+                        id: Date.now().toString(),
+                        slot: currentSlotDiskusi,
+                        nama: adminSenderName + " (Admin)",
+                        pesan: pesan,
+                        tanggal: new Date().toISOString(),
+                        parentId: parentId
+                    };
+
+                    await saveKomentarData(commentObj);
+
+                    textInput.value = '';
+                    parentIdInput.value = '';
+                    document.getElementById('replying-label-container-popup').style.display = 'none';
+
+                    await loadKomentar(currentSlotDiskusi);
+                });
             </script>
+
+            <!-- Modal Dialog Lihat Bukti Pembayaran -->
+            <div id="modal-bukti-popup" class="modal-overlay"
+                style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+                <div class="modal-content"
+                    style="max-width: 500px; text-align: center; background:#fff; padding:24px; border-radius:10px; position:relative; margin: 10% auto;">
+                    <span class="close-modal" id="close-bukti-popup"
+                        style="position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer;">&times;</span>
+                    <h2 style="margin-bottom:15px;">Bukti Pembayaran</h2>
+                    <img id="img-preview-box"
+                        style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                        src="" alt="Bukti Pembayaran">
+                </div>
+            </div>
+
+            <!-- Modal Dialog Forum Diskusi Komentar -->
+            <div id="modal-diskusi-popup" class="modal-overlay"
+                style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+                <div class="modal-content"
+                    style="max-width: 600px; max-height: 85vh; overflow-y: auto; background:#fff; padding:24px; border-radius:10px; position:relative; margin: 5% auto; text-align: left;">
+                    <span class="close-modal" id="close-diskusi-popup"
+                        style="position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer;">&times;</span>
+                    <h2 id="modal-diskusi-title-popup"
+                        style="margin-bottom:15px; border-bottom:2px solid #7e57c2; padding-bottom:8px; color:#333;">
+                        Forum Diskusi Kios</h2>
+
+                    <div id="komentar-container-popup"
+                        style="max-height: 400px; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;">
+                        <!-- Komentar & Balasan akan di-render di sini secara nested -->
+                    </div>
+
+                    <form id="form-tulis-komentar-popup" style="border-top: 1px solid #eee; padding-top: 15px;">
+                        <input type="hidden" id="komentar-parent-id-popup">
+                        <div class="form-group" id="replying-label-container-popup"
+                            style="display:none; background: #e8f5e9; padding: 10px; border-radius: 6px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size: 13px; color: #2e7d32;">Membalas komentar dari <strong
+                                    id="replying-to-name-popup"></strong></span>
+                            <button type="button" id="btn-cancel-reply-popup"
+                                style="border:none; background:none; color:#d32f2f; cursor:pointer; font-weight:bold; font-size:12px;">Batal</button>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <textarea id="input-komentar-teks-popup"
+                                placeholder="Tulis komentar/diskusi Anda di sini..." rows="3" required
+                                style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:14px; resize:vertical; outline:none;"></textarea>
+                        </div>
+                        <button type="submit"
+                            style="background:#28c25a; color:#fff; border:none; padding:12px 20px; border-radius:6px; font-weight:bold; cursor:pointer; width:100%; font-size:15px;">Kirim
+                            Komentar</button>
+                    </form>
+                </div>
+            </div>
         </div> <!-- Close main-layout -->
     </div> <!-- Close dashboard-wrapper -->
 </body>

@@ -33,7 +33,10 @@ const DEFAULT_KIOS_DATA = [
         durasi: "1", // Dalam tahun
         selesai: "2028-07-12",
         statusPembayaran: "Lunas",
-        harga: "Rp. 20.000.000"
+        harga: "Rp. 20.000.000",
+        lokasi: "Blok A No. 1",
+        luas: "4m x 4m",
+        buktiPembayaran: ""
     },
     {
         slot: "2",
@@ -43,7 +46,10 @@ const DEFAULT_KIOS_DATA = [
         durasi: "",
         selesai: "",
         statusPembayaran: "",
-        harga: ""
+        harga: "",
+        lokasi: "Blok A No. 2",
+        luas: "4m x 4m",
+        buktiPembayaran: ""
     },
     {
         slot: "3",
@@ -53,7 +59,10 @@ const DEFAULT_KIOS_DATA = [
         durasi: "",
         selesai: "",
         statusPembayaran: "",
-        harga: ""
+        harga: "",
+        lokasi: "Blok B No. 1",
+        luas: "4m x 5m",
+        buktiPembayaran: ""
     },
     {
         slot: "4",
@@ -63,7 +72,10 @@ const DEFAULT_KIOS_DATA = [
         durasi: "",
         selesai: "",
         statusPembayaran: "",
-        harga: ""
+        harga: "",
+        lokasi: "Blok B No. 2",
+        luas: "5m x 5m",
+        buktiPembayaran: ""
     }
 ];
 
@@ -77,7 +89,10 @@ function mapKiosFromDB(k) {
         durasi: k.durasi || "",
         selesai: k.selesai || "",
         statusPembayaran: k.status_pembayaran || "",
-        harga: k.harga || ""
+        harga: k.harga || "",
+        lokasi: k.lokasi || (k.slot === "1" || k.slot === "2" ? "Blok A No. " + k.slot : "Blok B No. " + (parseInt(k.slot) - 2)),
+        luas: k.luas || (k.slot === "4" ? "5m x 5m" : k.slot === "3" ? "4m x 5m" : "4m x 4m"),
+        buktiPembayaran: k.bukti_pembayaran || ""
     };
 }
 
@@ -91,7 +106,10 @@ function mapKiosToDB(k) {
         durasi: k.durasi || "",
         selesai: k.selesai || "",
         status_pembayaran: k.statusPembayaran || "",
-        harga: k.harga || ""
+        harga: k.harga || "",
+        lokasi: k.lokasi || "",
+        luas: k.luas || "",
+        bukti_pembayaran: k.buktiPembayaran || ""
     };
 }
 
@@ -125,11 +143,15 @@ function mapRiwayatToDB(r) {
 
 // Fungsi untuk inisialisasi data di localStorage jika belum ada (sebagai cadangan)
 function inisialisasiDatabase() {
-    if (!localStorage.getItem('kiosData')) {
+    const existing = localStorage.getItem('kiosData');
+    if (!existing || existing.toLowerCase().includes('wahyudi')) {
         localStorage.setItem('kiosData', JSON.stringify(DEFAULT_KIOS_DATA));
     }
     if (!localStorage.getItem('riwayatPenyewaan')) {
         localStorage.setItem('riwayatPenyewaan', JSON.stringify([]));
+    }
+    if (!localStorage.getItem('komentarKios')) {
+        localStorage.setItem('komentarKios', JSON.stringify([]));
     }
 }
 
@@ -140,7 +162,7 @@ inisialisasiDatabase();
 async function getKiosData() {
     const client = getSupabase();
     if (!client) {
-        return JSON.parse(localStorage.getItem('kiosData'));
+        return JSON.parse(localStorage.getItem('kiosData')) || DEFAULT_KIOS_DATA;
     }
     try {
         const { data, error } = await client
@@ -149,10 +171,20 @@ async function getKiosData() {
             .order('slot', { ascending: true });
 
         if (error) throw error;
-        return data.map(mapKiosFromDB);
+        
+        let mapped = data.map(mapKiosFromDB);
+
+        // Jika data dari Supabase berisi Wahyudi di slot 1, otomatis bersihkan dan timpa menjadi Wulan
+        const slot1 = mapped.find(k => k.slot === "1");
+        if (!slot1 || (slot1.nama && slot1.nama.toLowerCase().includes('wahyudi'))) {
+            await saveKiosData(DEFAULT_KIOS_DATA);
+            return DEFAULT_KIOS_DATA;
+        }
+
+        return mapped;
     } catch (err) {
         console.error("Gagal getKiosData dari Supabase, memuat dari localStorage:", err);
-        return JSON.parse(localStorage.getItem('kiosData'));
+        return JSON.parse(localStorage.getItem('kiosData')) || DEFAULT_KIOS_DATA;
     }
 }
 
@@ -178,21 +210,25 @@ async function saveKiosData(data) {
 // Fungsi membaca data Riwayat (Asinkron)
 async function getRiwayatData() {
     const client = getSupabase();
+    let riwayat = [];
     if (!client) {
-        return JSON.parse(localStorage.getItem('riwayatPenyewaan'));
-    }
-    try {
-        const { data, error } = await client
-            .from('riwayat_penyewaan')
-            .select('*')
-            .order('created_at', { ascending: true });
+        riwayat = JSON.parse(localStorage.getItem('riwayatPenyewaan')) || [];
+    } else {
+        try {
+            const { data, error } = await client
+                .from('riwayat_penyewaan')
+                .select('*')
+                .order('created_at', { ascending: true });
 
-        if (error) throw error;
-        return data.map(mapRiwayatFromDB);
-    } catch (err) {
-        console.error("Gagal getRiwayatData dari Supabase, memuat dari localStorage:", err);
-        return JSON.parse(localStorage.getItem('riwayatPenyewaan'));
+            if (error) throw error;
+            riwayat = data.map(mapRiwayatFromDB);
+        } catch (err) {
+            console.error("Gagal getRiwayatData dari Supabase, memuat dari localStorage:", err);
+            riwayat = JSON.parse(localStorage.getItem('riwayatPenyewaan')) || [];
+        }
     }
+    // Filter data Wahyudi jika ada
+    return riwayat.filter(r => !r.nama || !r.nama.toLowerCase().includes('wahyudi'));
 }
 
 // Fungsi menyimpan data Riwayat (Asinkron)
@@ -302,4 +338,225 @@ function bukaWhatsAppWeb(nomorTujuan, pesan) {
     const nomorFormat = formatNomorHP(nomorTujuan);
     const url = `https://web.whatsapp.com/send?phone=${nomorFormat}&text=${encodeURIComponent(pesan)}`;
     window.open(url, '_blank');
+}
+
+// Fungsi membaca data Komentar Diskusi (Asinkron)
+async function getKomentarData(slot) {
+    const client = getSupabase();
+    if (!client) {
+        const localData = JSON.parse(localStorage.getItem('komentarKios')) || [];
+        return localData.filter(c => c.slot === slot);
+    }
+    try {
+        const { data, error } = await client
+            .from('diskusi_komentar')
+            .select('*')
+            .eq('slot', slot)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return data.map(c => ({
+            id: c.id,
+            slot: c.slot,
+            nama: c.nama,
+            pesan: c.komentar,
+            tanggal: c.created_at,
+            parentId: c.parent_id
+        }));
+    } catch (err) {
+        console.warn("Gagal getKomentarData dari Supabase, menggunakan fallback localStorage:", err);
+        const localData = JSON.parse(localStorage.getItem('komentarKios')) || [];
+        return localData.filter(c => c.slot === slot);
+    }
+}
+
+// Fungsi menyimpan/menambahkan data Komentar Diskusi (Asinkron)
+async function saveKomentarData(comment) {
+    // Update local storage
+    const localData = JSON.parse(localStorage.getItem('komentarKios')) || [];
+    localData.push(comment);
+    localStorage.setItem('komentarKios', JSON.stringify(localData));
+
+    const client = getSupabase();
+    if (!client) return;
+
+    try {
+        const dbItem = {
+            id: comment.id,
+            slot: comment.slot,
+            nama: comment.nama,
+            komentar: comment.pesan,
+            created_at: comment.tanggal,
+            parent_id: comment.parentId
+        };
+        const { error } = await client
+            .from('diskusi_komentar')
+            .insert([dbItem]);
+
+        if (error) throw error;
+    } catch (err) {
+        console.error("Gagal saveKomentarData ke Supabase:", err);
+    }
+}
+
+// =========================================================
+// FITUR DEDICATED FORUM DISKUSI KIOS (V-CLASS STYLE)
+// =========================================================
+
+// Membaca Topik Diskusi (Opsional Filter per Slot Kios)
+async function getTopikDiskusiData(slotFilter) {
+    const client = getSupabase();
+    let topics = [];
+    if (!client) {
+        topics = JSON.parse(localStorage.getItem('topikDiskusiKios')) || [];
+    } else {
+        try {
+            let query = client.from('topik_diskusi').select('*').order('created_at', { ascending: false });
+            if (slotFilter) {
+                query = query.eq('slot', slotFilter);
+            }
+            const { data, error } = await query;
+            if (error) throw error;
+            topics = data.map(t => ({
+                id: t.id,
+                slot: t.slot || "1",
+                subject: t.subject,
+                nama: t.nama,
+                role: t.role,
+                pesan: t.pesan,
+                tanggal: t.created_at,
+                balasanCount: t.balasan_count || 0,
+                waktuTerakhir: t.waktu_terakhir || t.created_at
+            }));
+        } catch (err) {
+            console.warn("Gagal getTopikDiskusiData dari Supabase, memuat dari localStorage:", err);
+            topics = JSON.parse(localStorage.getItem('topikDiskusiKios')) || [];
+        }
+    }
+    if (slotFilter) {
+        topics = topics.filter(t => !t.slot || t.slot === slotFilter);
+    }
+    return topics;
+}
+
+// Menyimpan Topik Diskusi Baru
+async function saveTopikDiskusiData(topikObj) {
+    const localData = JSON.parse(localStorage.getItem('topikDiskusiKios')) || [];
+    localData.unshift(topikObj);
+    localStorage.setItem('topikDiskusiKios', JSON.stringify(localData));
+
+    const client = getSupabase();
+    if (!client) return;
+
+    try {
+        const dbItem = {
+            id: topikObj.id,
+            slot: topikObj.slot || "1",
+            subject: topikObj.subject,
+            nama: topikObj.nama,
+            role: topikObj.role,
+            pesan: topikObj.pesan,
+            created_at: topikObj.tanggal,
+            balasan_count: topikObj.balasanCount,
+            waktu_terakhir: topikObj.waktuTerakhir
+        };
+        const { error } = await client
+            .from('topik_diskusi')
+            .insert([dbItem]);
+
+        if (error) throw error;
+    } catch (err) {
+        console.error("Gagal saveTopikDiskusiData ke Supabase:", err);
+    }
+}
+
+// Membaca Balasan Diskusi per Topik
+async function getBalasanDiskusiData(topikId) {
+    const client = getSupabase();
+    if (!client) {
+        const localData = JSON.parse(localStorage.getItem('balasanDiskusiKios')) || [];
+        return localData.filter(b => b.topikId === topikId);
+    }
+    try {
+        const { data, error } = await client
+            .from('balasan_diskusi')
+            .select('*')
+            .eq('topik_id', topikId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return data.map(b => ({
+            id: b.id,
+            topikId: b.topik_id,
+            parentId: b.parent_id,
+            nama: b.nama,
+            pesan: b.pesan,
+            tanggal: b.created_at
+        }));
+    } catch (err) {
+        console.warn("Gagal getBalasanDiskusiData dari Supabase, memuat dari localStorage:", err);
+        const localData = JSON.parse(localStorage.getItem('balasanDiskusiKios')) || [];
+        return localData.filter(b => b.topikId === topikId);
+    }
+}
+
+// Menyimpan Balasan Diskusi Baru
+async function saveBalasanDiskusiData(balasanObj) {
+    // 1. Simpan Balasan ke localStorage
+    const localBalasan = JSON.parse(localStorage.getItem('balasanDiskusiKios')) || [];
+    localBalasan.push(balasanObj);
+    localStorage.setItem('balasanDiskusiKios', JSON.stringify(localBalasan));
+
+    // 2. Update counter balasan di Topik
+    const localTopik = JSON.parse(localStorage.getItem('topikDiskusiKios')) || [];
+    const idx = localTopik.findIndex(t => t.id === balasanObj.topikId);
+    if (idx !== -1) {
+        localTopik[idx].balasanCount = (localTopik[idx].balasanCount || 0) + 1;
+        localTopik[idx].waktuTerakhir = balasanObj.tanggal;
+        localStorage.setItem('topikDiskusiKios', JSON.stringify(localTopik));
+    }
+
+    const client = getSupabase();
+    if (!client) return;
+
+    try {
+        const dbItem = {
+            id: balasanObj.id,
+            topik_id: balasanObj.topikId,
+            parent_id: balasanObj.parentId,
+            nama: balasanObj.nama,
+            pesan: balasanObj.pesan,
+            created_at: balasanObj.tanggal
+        };
+        const { error } = await client
+            .from('balasan_diskusi')
+            .insert([dbItem]);
+
+        if (error) throw error;
+    } catch (err) {
+        console.error("Gagal saveBalasanDiskusiData ke Supabase:", err);
+    }
+}
+
+// Menghapus Topik Diskusi beserta Balasannya
+async function deleteTopikDiskusiData(topikId) {
+    // 1. Hapus dari localStorage
+    let localTopik = JSON.parse(localStorage.getItem('topikDiskusiKios')) || [];
+    localTopik = localTopik.filter(t => t.id !== topikId);
+    localStorage.setItem('topikDiskusiKios', JSON.stringify(localTopik));
+
+    let localBalasan = JSON.parse(localStorage.getItem('balasanDiskusiKios')) || [];
+    localBalasan = localBalasan.filter(b => b.topikId !== topikId);
+    localStorage.setItem('balasanDiskusiKios', JSON.stringify(localBalasan));
+
+    // 2. Hapus dari Supabase
+    const client = getSupabase();
+    if (!client) return;
+
+    try {
+        await client.from('balasan_diskusi').delete().eq('topik_id', topikId);
+        await client.from('topik_diskusi').delete().eq('id', topikId);
+    } catch (err) {
+        console.error("Gagal deleteTopikDiskusiData dari Supabase:", err);
+    }
 }

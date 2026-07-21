@@ -1,0 +1,39 @@
+/* =========================================================
+   STYLE DISKUSI KIOS - ADMIN (PEMILIK)
+   ========================================================= */
+
+@import url('style-dashboard-admin.css');
+
+/* Admin Kios Slot Selector Container */
+.admin-slot-selector {
+    display: flex;
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-slot-selector label {
+    font-weight: bold;
+    color: #333333;
+    font-size: 15px;
+}
+
+.admin-slot-selector select {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid #cccccc;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.admin-slot-selector select:focus {
+    border-color: #28c25a;
+    box-shadow: 0 0 0 3px rgba(40, 194, 90, 0.15);
+}

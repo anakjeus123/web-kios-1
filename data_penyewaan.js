@@ -32,13 +32,18 @@ async function renderTabel() {
             tr.innerHTML = `
                 <td>${k.slot}</td>
                 <td colspan="8" style="text-align: center; color: #999; font-style: italic;">— Slot Kosong —</td>
-                <td></td>
+                <td>
+                    <button class="btn-diskusi-view" data-slot="${k.slot}" style="background-color: #7e57c2; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;">💬 Diskusi</button>
+                </td>
             `;
         } else {
             // Slot terisi
             const sisa = hitungSisaWaktu(k.selesai);
             const badgeClass = k.statusPembayaran === 'Lunas' ? 'badge-lunas-tbl' : 'badge-belum-tbl';
             
+            const btnBuktiHtml = k.buktiPembayaran ? `<button class="btn-bukti-view" data-slot="${k.slot}" style="background-color: #0288d1; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight:600;">🔍 Bukti</button>` : '';
+            const btnDiskusiHtml = `<button class="btn-diskusi-view" data-slot="${k.slot}" style="background-color: #7e57c2; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight:600;">💬 Diskusi</button>`;
+
             tr.innerHTML = `
                 <td>${k.slot}</td>
                 <td>${k.nama}</td>
@@ -53,6 +58,8 @@ async function renderTabel() {
                     <button class="btn-edit" data-slot="${k.slot}">Edit</button>
                     <button class="btn-delete" data-slot="${k.slot}">Hapus</button>
                     <button class="btn-wa" data-slot="${k.slot}" title="Konfirmasi pembayaran via WhatsApp">WA</button>
+                    ${btnBuktiHtml}
+                    ${btnDiskusiHtml}
                 </td>
             `;
         }
@@ -227,6 +234,19 @@ tabelBody.addEventListener('click', async function (event) {
         const pesan = `Halo ${k.nama}, ini konfirmasi dari Admin Penyewaan Kios.\n\nDetail Sewa Kios Slot ${k.slot} Anda:\n- Tanggal Mulai: ${formatTanggalIndo(k.mulai)}\n- Tanggal Selesai: ${formatTanggalIndo(k.selesai)}\n- Durasi: ${k.durasi} Tahun\n- Harga Sewa: ${k.harga}\n- Status Pembayaran: ${k.statusPembayaran}\n\nTerima kasih sudah menyewa kios kami!`;
         bukaWhatsAppWeb(k.hp, pesan);
     }
+
+    // --- TOMBOL BUKTI ---
+    if (target.classList.contains('btn-bukti-view')) {
+        const k = kiosList[idx];
+        if (k.buktiPembayaran) {
+            showBuktiBayarModal(k.buktiPembayaran);
+        }
+    }
+
+    // --- TOMBOL DISKUSI ---
+    if (target.classList.contains('btn-diskusi-view')) {
+        openDiskusiModal(slot);
+    }
 });
 
 // =========================================================
@@ -277,3 +297,182 @@ async function init() {
     await renderRiwayat();
 }
 init();
+
+// =========================================================
+// FITUR MODAL BUKTI BAYAR & FORUM DISKUSI (ADMIN SIDE)
+// =========================================================
+const adminSenderName = localStorage.getItem('namaAdmin') || 'Admin';
+
+function showBuktiBayarModal(base64Image) {
+    document.getElementById('img-bukti-preview').src = base64Image;
+    document.getElementById('modal-bukti').style.display = 'block';
+}
+
+if (document.getElementById('close-bukti')) {
+    document.getElementById('close-bukti').addEventListener('click', function() {
+        document.getElementById('modal-bukti').style.display = 'none';
+    });
+}
+
+let currentSlotDiskusi = "";
+
+async function openDiskusiModal(slot) {
+    currentSlotDiskusi = slot;
+    document.getElementById('modal-diskusi-title').textContent = `Forum Diskusi Kios Slot ${slot}`;
+    document.getElementById('komentar-parent-id').value = '';
+    document.getElementById('replying-label-container').style.display = 'none';
+    document.getElementById('modal-diskusi').style.display = 'block';
+    await loadKomentar(slot);
+}
+
+if (document.getElementById('close-diskusi')) {
+    document.getElementById('close-diskusi').addEventListener('click', function() {
+        document.getElementById('modal-diskusi').style.display = 'none';
+    });
+}
+
+if (document.getElementById('btn-cancel-reply')) {
+    document.getElementById('btn-cancel-reply').addEventListener('click', function() {
+        document.getElementById('komentar-parent-id').value = '';
+        document.getElementById('replying-label-container').style.display = 'none';
+    });
+}
+
+async function loadKomentar(slot) {
+    const list = await getKomentarData(slot);
+    const container = document.getElementById('komentar-container');
+    container.innerHTML = '';
+
+    if (list.length === 0) {
+        container.innerHTML = `<p style="color: #777; font-style: italic; text-align: center; margin-top: 20px;">Belum ada diskusi di kios ini. Mari mulai berkomentar!</p>`;
+        return;
+    }
+
+    const rootComments = list.filter(c => !c.parentId);
+    const replies = list.filter(c => c.parentId);
+
+    rootComments.forEach(c => {
+        const commentEl = createCommentElement(c, false);
+        container.appendChild(commentEl);
+
+        const childReplies = replies.filter(r => r.parentId === c.id);
+        childReplies.forEach(reply => {
+            const replyEl = createCommentElement(reply, true);
+            container.appendChild(replyEl);
+        });
+    });
+}
+
+function createCommentElement(c, isReply) {
+    const div = document.createElement('div');
+    div.style.padding = '12px 16px';
+    div.style.borderRadius = '8px';
+    div.style.marginBottom = '12px';
+    div.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+    div.style.boxSizing = 'border-box';
+
+    if (isReply) {
+        div.style.marginLeft = '40px';
+        div.style.borderLeft = '4px solid #28c25a';
+        div.style.background = '#f9f9f9';
+    } else {
+        div.style.borderLeft = '4px solid #7e57c2';
+        div.style.background = '#ffffff';
+        div.style.border = '1px solid #eee';
+    }
+
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.fontSize = '12px';
+    header.style.color = '#666';
+    header.style.marginBottom = '8px';
+
+    const author = document.createElement('strong');
+    author.textContent = c.nama;
+    author.style.color = isReply ? '#2e7d32' : '#7e57c2';
+
+    const dateSpan = document.createElement('span');
+    dateSpan.textContent = new Date(c.tanggal).toLocaleString('id-ID');
+
+    header.appendChild(author);
+    header.appendChild(dateSpan);
+
+    const body = document.createElement('div');
+    body.style.fontSize = '14px';
+    body.style.color = '#333';
+    body.style.lineHeight = '1.5';
+
+    if (isReply) {
+        const reHeader = document.createElement('div');
+        reHeader.style.fontWeight = 'bold';
+        reHeader.style.color = '#555';
+        reHeader.style.fontSize = '12px';
+        reHeader.style.marginBottom = '4px';
+        reHeader.textContent = `Re: Diskusi Kios`;
+        body.appendChild(reHeader);
+    }
+
+    const contentText = document.createElement('p');
+    contentText.textContent = c.pesan;
+    body.appendChild(contentText);
+
+    div.appendChild(header);
+    div.appendChild(body);
+
+    if (!isReply) {
+        const actions = document.createElement('div');
+        actions.style.textAlign = 'right';
+        actions.style.marginTop = '8px';
+
+        const replyBtn = document.createElement('button');
+        replyBtn.textContent = 'Reply';
+        replyBtn.style.background = 'none';
+        replyBtn.style.border = 'none';
+        replyBtn.style.color = '#0288d1';
+        replyBtn.style.fontWeight = 'bold';
+        replyBtn.style.cursor = 'pointer';
+        replyBtn.style.fontSize = '12px';
+        replyBtn.addEventListener('click', function() {
+            document.getElementById('komentar-parent-id').value = c.id;
+            document.getElementById('replying-to-name').textContent = c.nama;
+            document.getElementById('replying-label-container').style.display = 'flex';
+            document.getElementById('input-komentar-teks').focus();
+        });
+
+        actions.appendChild(replyBtn);
+        div.appendChild(actions);
+    }
+
+    return div;
+}
+
+// Submit komentar baru (Admin)
+if (document.getElementById('form-tulis-komentar')) {
+    document.getElementById('form-tulis-komentar').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const textInput = document.getElementById('input-komentar-teks');
+        const parentIdInput = document.getElementById('komentar-parent-id');
+        const pesan = textInput.value.trim();
+        const parentId = parentIdInput.value || null;
+
+        if (!pesan) return;
+
+        const commentObj = {
+            id: Date.now().toString(),
+            slot: currentSlotDiskusi,
+            nama: adminSenderName + " (Admin)",
+            pesan: pesan,
+            tanggal: new Date().toISOString(),
+            parentId: parentId
+        };
+
+        await saveKomentarData(commentObj);
+
+        textInput.value = '';
+        parentIdInput.value = '';
+        document.getElementById('replying-label-container').style.display = 'none';
+
+        await loadKomentar(currentSlotDiskusi);
+    });
+}

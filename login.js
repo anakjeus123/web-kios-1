@@ -42,7 +42,7 @@ loginForm.addEventListener('submit', async function (event) {
         alert('Login Admin Berhasil!');
         localStorage.setItem('namaPenyewa', 'abiM');
         localStorage.setItem('namaAdmin', 'abiM');
-        window.location.href = 'dashboard_penyewa.html';
+        window.location.href = 'dashboard_admin.html';
         return;
     }
 
@@ -96,6 +96,11 @@ loginForm.addEventListener('submit', async function (event) {
     if (akunCocok) {
         alert('Login Berhasil! Selamat Datang, ' + akunCocok.username);
         localStorage.setItem('namaPenyewa', akunCocok.username);
+        if (akunCocok.username.toLowerCase() === 'abim') {
+            localStorage.setItem('namaAdmin', 'abiM');
+        } else {
+            localStorage.removeItem('namaAdmin');
+        }
         window.location.href = 'dashboard_penyewa.html';
     } else {
         if (!userExist) {

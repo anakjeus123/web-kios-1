@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Stylesheet khusus Penyewa dan Admin -->
+    <link rel="stylesheet" href="style-diskusi-kios-penyewa.css">
+    <link rel="stylesheet" href="style-diskusi-kios-admin.css">
+    <title>Diskusi Kios - Forum Diskusi</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <h2 class="sidebar-tittle" id="sidebar-role-title">PENYEWA</h2>
+            <ul class="sidebar-menu" id="sidebar-menu-list">
+                <li><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard">
+                        Dashboard</a></li>
+                <li><a href="data_sewa.html"><img src="property.png" class="sidebar-icon" alt="Data Sewa"> Data Sewa</a>
+                </li>
+                <li><a href="diskusi_kios.html" class="active"><img src="property.png" class="sidebar-icon"
+                            alt="Diskusi Kios"> Diskusi Kios</a></li>
+                <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><img src="dashboard.png"
+                            class="sidebar-icon" alt="Dashboard Admin"> Dashboard Admin</a></li>
+            </ul>
+        </aside>
+
+        <div class="main-layout">
+            <header class="top-header">
+                <div class="header-right">
+                    <a href="index.html" class="btn-logout-header">
+                        <span class="icon">🚪</span> Keluar
+                    </a>
+                    <span class="header-divider">|</span>
+                    <div class="header-profile">
+                        <span class="header-username" id="user-top-name">Pengguna</span>
+                        <span class="header-user-icon" id="user-top-avatar">U</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h2 id="forum-banner-title">Forum Diskusi Kios</h2>
+                        <p id="forum-banner-sub">Diskusi interaktif khusus untuk kios yang telah Anda sewa.</p>
+                    </div>
+                    <div class="welcome-date" id="current-date-banner">
+                        -
+                    </div>
+                </div>
+
+                <!-- Admin Kios Selector (Hanya Tampil untuk Admin) -->
+                <div id="admin-slot-selector" class="admin-slot-selector" style="display: none;">
+                    <label for="select-admin-slot">Pilih Forum Slot Kios:</label>
+                    <select id="select-admin-slot">
+                        <option value="1">Kios Slot 1</option>
+                        <option value="2">Kios Slot 2</option>
+                        <option value="3">Kios Slot 3</option>
+                        <option value="4">Kios Slot 4</option>
+                    </select>
+                </div>
+
+                <!-- Warning jika penyewa belum sewa kios -->
+                <div id="no-kios-warning" class="no-kios-warning" style="display: none;">
+                    <h3>⚠️ Anda belum memiliki sewaan kios</h3>
+                    <p>Forum Diskusi Kios hanya dapat diakses oleh pedagang yang telah mendaftar sewa kios. Silakan sewa
+                        kios terlebih dahulu pada menu <strong>Dashboard</strong>.</p>
+                </div>
+
+                <!-- Tombol Buat Topik Baru -->
+                <div id="action-topic-container" style="margin-bottom: 20px;">
+                    <button id="btn-show-create-topic" class="btn-add-topic">+ Tambah Topik Diskusi Baru</button>
+                </div>
+
+                <!-- Form Tambah Topik Diskusi (Toggled) -->
+                <div id="box-create-topic" class="form-topic-box" style="display: none;">
+                    <h2 style="margin-bottom: 18px; color: #333;" id="form-topic-header">Tambah Topik Diskusi Baru</h2>
+                    <form id="form-new-topic">
+                        <div class="form-group-topic">
+                            <label for="input-subject">Subject (Judul Topik) <span
+                                    style="color:#d32f2f;">*</span></label>
+                            <input type="text" id="input-subject" placeholder="Masukkan judul topik diskusi..."
+                                required>
+                        </div>
+                        <div class="form-group-topic">
+                            <label for="input-message">Message (Pesan Diskusi) <span
+                                    style="color:#d32f2f;">*</span></label>
+                            <textarea id="input-message" rows="5"
+                                placeholder="Tuliskan isi detail pertanyaan/diskusi Anda di sini..."
+                                required></textarea>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button type="submit" class="btn-add-topic" style="padding: 10px 20px;">Post to forum (Kirim
+                                ke Forum)</button>
+                            <button type="button" id="btn-cancel-topic" class="btn-cancel-topic">Cancel (Batal)</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Daftar Topik Diskusi (Tabel V-Class Style) -->
+                <div id="box-topic-list" class="forum-card">
+                    <h2 style="margin-bottom: 15px; color: #333; font-size: 20px;" id="list-topic-header">Daftar Topik
+                        Diskusi</h2>
+                    <table class="forum-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 45%;">Topik Diskusi (Subject)</th>
+                                <th style="width: 20%;">Oleh (Penulis)</th>
+                                <th style="width: 10%; text-align: center;">Balasan</th>
+                                <th style="width: 15%;">Waktu Terakhir</th>
+                                <th style="width: 10%; text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-topik-diskusi">
+                            <!-- Diisi via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL DIALOG DETAIL TOPIK & NESTED REPLIES -->
+    <div id="modal-thread" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 750px; max-height: 85vh; overflow-y: auto; text-align: left;">
+            <span class="close-modal" id="close-thread-modal"
+                style="float: right; font-size: 24px; cursor: pointer;">&times;</span>
+            <h2 id="thread-subject-title"
+                style="margin-bottom: 15px; border-bottom: 2px solid #28c25a; padding-bottom: 8px; color: #333;">-</h2>
+
+            <!-- Pesan Utama Topik -->
+            <div id="main-topic-card"
+                style="background: #f4fbf6; border-left: 4px solid #28c25a; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                <div
+                    style="display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 8px;">
+                    <div>
+                        <strong id="main-topic-author" style="color: #2e7d32; font-size: 14px;">-</strong>
+                        <span id="main-topic-badge" class="badge-role badge-penyewa"
+                            style="margin-left: 6px;">Penyewa</span>
+                    </div>
+                    <span id="main-topic-date">-</span>
+                </div>
+                <div id="main-topic-message" style="font-size: 15px; color: #333; line-height: 1.6;">-</div>
+            </div>
+
+            <h3
+                style="margin-bottom: 12px; color: #444; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 6px;">
+                Balasan Diskusi Thread</h3>
+
+            <!-- Container Daftar Balasan (Nested) -->
+            <div id="replies-container"
+                style="max-height: 350px; overflow-y: auto; padding-right: 8px; margin-bottom: 20px;">
+                <!-- Diisi via JS -->
+            </div>
+
+            <!-- Form Balas Pesan -->
+            <form id="form-reply-thread" style="border-top: 1px solid #eee; padding-top: 15px;">
+                <input type="hidden" id="reply-parent-id">
+                <div id="replying-info-bar"
+                    style="display: none; background: #e8f5e9; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; color: #2e7d32; justify-content: space-between; align-items: center;">
+                    <span>Membalas pesan dari <strong id="replying-target-name">-</strong></span>
+                    <button type="button" id="btn-cancel-reply-target"
+                        style="border: none; background: none; color: #d32f2f; cursor: pointer; font-weight: bold;">Batal</button>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <textarea id="reply-message-input" rows="3" placeholder="Tuliskan balasan diskusi Anda..." required
+                        style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; outline: none; resize: vertical;"></textarea>
+                </div>
+                <button type="submit" class="btn-add-topic" style="padding: 10px 20px; width: 100%;">Post Reply (Kirim
+                    Balasan)</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script>
+        // Cek pengguna (Admin / Penyewa)
+        const namaPenyewa = localStorage.getItem('namaPenyewa');
+        const namaAdmin = localStorage.getItem('namaAdmin');
+        const currentUser = namaPenyewa || namaAdmin;
+
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        const isUserAdmin = (currentUser.toLowerCase() === 'abim' || !!namaAdmin);
+
+        // Tampilkan Identitas User
+        document.getElementById('user-top-name').textContent = currentUser;
+        if (currentUser.trim().length > 0) {
+            document.getElementById('user-top-avatar').textContent = currentUser.trim().charAt(0).toUpperCase();
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const isModeAdmin = (urlParams.get('mode') === 'admin');
+
+        // Setup Sidebar & Role secara presisi sesuai konteks asal (Admin vs Penyewa)
+        const sidebarMenu = document.getElementById('sidebar-menu-list');
+        const sidebarTitle = document.getElementById('sidebar-role-title');
+
+        if (isUserAdmin && isModeAdmin) {
+            sidebarTitle.textContent = 'PEMILIK';
+            sidebarMenu.innerHTML = `
+                <li><a href="dashboard_admin.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard"> Dashboard</a></li>
+                <li><a href="data_penyewaan.html"><img src="property.png" class="sidebar-icon" alt="Data Kontrakan"> Data Penyewaan Kios</a></li>
+                <li><a href="diskusi_kios.html?mode=admin" class="active"><img src="property.png" class="sidebar-icon" alt="Diskusi Kios"> Diskusi Kios</a></li>
+                <li><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard Penyewa"> Dashboard Penyewa</a></li>
+            `;
+        } else {
+            sidebarTitle.textContent = 'PENYEWA';
+            sidebarMenu.innerHTML = `
+                <li><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard"> Dashboard</a></li>
+                <li><a href="data_sewa.html"><img src="property.png" class="sidebar-icon" alt="Data Sewa"> Data Sewa</a></li>
+                <li><a href="diskusi_kios.html" class="active"><img src="property.png" class="sidebar-icon" alt="Diskusi Kios"> Diskusi Kios</a></li>
+                ${isUserAdmin ? '<li id="admin-link-item"><a href="dashboard_admin.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard Admin"> Dashboard Admin</a></li>' : ''}
+            `;
+        }
+
+        // Tanggal banner
+        const opsiDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date-banner').textContent = new Date().toLocaleDateString('id-ID', opsiDate);
+
+        // Handler Keluar / Logout
+        document.querySelector('.btn-logout-header').addEventListener('click', function (e) {
+            e.preventDefault();
+            localStorage.removeItem('namaPenyewa');
+            localStorage.removeItem('namaAdmin');
+            window.location.href = 'index.html';
+        });
+
+        // Global state untuk slot yang aktif didiskusikan
+        let activeKiosSlot = null;
+
+        async function initForumPage() {
+            const kiosList = await getKiosData();
+
+            if (isUserAdmin) {
+                // Admin: tampilkan selector slot kios
+                document.getElementById('admin-slot-selector').style.display = 'flex';
+                activeKiosSlot = document.getElementById('select-admin-slot').value;
+
+                document.getElementById('select-admin-slot').addEventListener('change', async function () {
+                    activeKiosSlot = this.value;
+                    updateBannerTitle();
+                    await loadTopikDiskusi();
+                });
+            } else {
+                // Penyewa: cari sewaan milik penyewa aktif
+                const sewaan = kiosList.find(k => k.nama && k.nama.toLowerCase() === currentUser.toLowerCase());
+                if (sewaan) {
+                    activeKiosSlot = sewaan.slot;
+                } else {
+                    activeKiosSlot = null;
+                    document.getElementById('no-kios-warning').style.display = 'block';
+                    document.getElementById('action-topic-container').style.display = 'none';
+                    document.getElementById('box-topic-list').style.display = 'none';
+                }
+            }
+
+            updateBannerTitle();
+            if (activeKiosSlot) {
+                await loadTopikDiskusi();
+            }
+        }
+
+        function updateBannerTitle() {
+            if (activeKiosSlot) {
+                document.getElementById('forum-banner-title').textContent = `Forum Diskusi Kios Slot ${activeKiosSlot}`;
+                document.getElementById('forum-banner-sub').textContent = `Diskusi interaktif khusus penyewaan Kios Slot ${activeKiosSlot}.`;
+                document.getElementById('list-topic-header').textContent = `Daftar Topik Diskusi Kios Slot ${activeKiosSlot}`;
+                document.getElementById('form-topic-header').textContent = `Tambah Topik Diskusi (Kios Slot ${activeKiosSlot})`;
+            }
+        }
+
+        // Toggle Form Tambah Topik
+        const btnShowCreate = document.getElementById('btn-show-create-topic');
+        const boxCreate = document.getElementById('box-create-topic');
+        const btnCancelCreate = document.getElementById('btn-cancel-topic');
+
+        btnShowCreate.addEventListener('click', function () {
+            boxCreate.style.display = 'block';
+            boxCreate.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        btnCancelCreate.addEventListener('click', function () {
+            boxCreate.style.display = 'none';
+        });
+
+        // Submit Form Topik Diskusi Baru
+        const formNewTopic = document.getElementById('form-new-topic');
+        formNewTopic.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const subject = document.getElementById('input-subject').value.trim();
+            const message = document.getElementById('input-message').value.trim();
+
+            if (!subject || !message || !activeKiosSlot) return;
+
+            const topikObj = {
+                id: 'topik_' + Date.now(),
+                slot: activeKiosSlot,
+                subject: subject,
+                nama: currentUser + (isUserAdmin ? ' (Admin)' : ''),
+                role: isUserAdmin ? 'Admin' : 'Penyewa',
+                pesan: message,
+                tanggal: new Date().toISOString(),
+                balasanCount: 0,
+                waktuTerakhir: new Date().toISOString()
+            };
+
+            await saveTopikDiskusiData(topikObj);
+            formNewTopic.reset();
+            boxCreate.style.display = 'none';
+            await loadTopikDiskusi();
+        });
+
+        // Render Tabel Topik Diskusi
+        async function loadTopikDiskusi() {
+            if (!activeKiosSlot) return;
+            const list = await getTopikDiskusiData(activeKiosSlot);
+            const tbody = document.getElementById('tbody-topik-diskusi');
+            tbody.innerHTML = '';
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888; font-style: italic; padding: 20px;">[There are no discussion topics yet in this forum] (Belum ada topik diskusi untuk Kios Slot ${activeKiosSlot})</td></tr>`;
+                return;
+            }
+
+            list.forEach(t => {
+                const tr = document.createElement('tr');
+                const lastStr = new Date(t.waktuTerakhir).toLocaleString('id-ID');
+                const badgeRole = t.role === 'Admin' ? '<span class="badge-role badge-admin">Admin</span>' : '<span class="badge-role badge-penyewa">Penyewa</span>';
+
+                tr.innerHTML = `
+                    <td>
+                        <a href="#" class="topic-link" data-id="${t.id}">${t.subject}</a>
+                    </td>
+                    <td><strong>${t.nama}</strong> ${badgeRole}</td>
+                    <td style="text-align: center; font-weight: bold; color: #28c25a;">${t.balasanCount}</td>
+                    <td style="font-size: 12px; color: #666;">${lastStr}</td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <button class="btn-open-thread" data-id="${t.id}" style="background: #28c25a; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; margin-right: 4px;">Buka Thread</button>
+                        <button class="btn-delete-thread" data-id="${t.id}" style="background: #d32f2f; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px;">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        initForumPage();
+
+        // Open Modal Thread View / Delete Thread
+        let activeTopikId = "";
+        const modalThread = document.getElementById('modal-thread');
+        const closeThreadModal = document.getElementById('close-thread-modal');
+
+        closeThreadModal.addEventListener('click', function () {
+            modalThread.style.display = 'none';
+        });
+
+        document.getElementById('tbody-topik-diskusi').addEventListener('click', async function (e) {
+            const target = e.target;
+            const topikId = target.getAttribute('data-id');
+            if (!topikId) return;
+
+            if (target.classList.contains('btn-open-thread') || target.classList.contains('topic-link')) {
+                e.preventDefault();
+                activeTopikId = topikId;
+                await openThreadView(topikId);
+            } else if (target.classList.contains('btn-delete-thread')) {
+                e.preventDefault();
+                const yakin = confirm("Apakah Anda yakin ingin menghapus topik diskusi ini?");
+                if (yakin) {
+                    await deleteTopikDiskusiData(topikId);
+                    alert("Topik diskusi berhasil dihapus!");
+                    await loadTopikDiskusi();
+                }
+            }
+        });
+
+        async function openThreadView(topikId) {
+            const listTopik = await getTopikDiskusiData();
+            const topik = listTopik.find(t => t.id === topikId);
+            if (!topik) return;
+
+            document.getElementById('thread-subject-title').textContent = topik.subject;
+            document.getElementById('main-topic-author').textContent = topik.nama;
+            document.getElementById('main-topic-badge').textContent = topik.role;
+            document.getElementById('main-topic-badge').className = `badge-role ${topik.role === 'Admin' ? 'badge-admin' : 'badge-penyewa'}`;
+            document.getElementById('main-topic-date').textContent = new Date(topik.tanggal).toLocaleString('id-ID');
+            document.getElementById('main-topic-message').textContent = topik.pesan;
+
+            document.getElementById('reply-parent-id').value = '';
+            document.getElementById('replying-info-bar').style.display = 'none';
+
+            await renderBalasan(topikId);
+            modalThread.style.display = 'block';
+        }
+
+        async function renderBalasan(topikId) {
+            const replies = await getBalasanDiskusiData(topikId);
+            const container = document.getElementById('replies-container');
+            container.innerHTML = '';
+
+            if (replies.length === 0) {
+                container.innerHTML = `<p style="color: #888; font-style: italic; text-align: center; margin-top: 15px;">Belum ada balasan di thread ini.</p>`;
+                return;
+            }
+
+            const rootReplies = replies.filter(r => !r.parentId);
+            const childReplies = replies.filter(r => r.parentId);
+
+            rootReplies.forEach(r => {
+                const el = createReplyElement(r, false);
+                container.appendChild(el);
+
+                const subList = childReplies.filter(sub => sub.parentId === r.id);
+                subList.forEach(sub => {
+                    const subEl = createReplyElement(sub, true);
+                    container.appendChild(subEl);
+                });
+            });
+        }
+
+        function createReplyElement(r, isNested) {
+            const div = document.createElement('div');
+            div.className = `reply-card ${isNested ? 'reply-nested' : ''}`;
+
+            const header = document.createElement('div');
+            header.style.display = 'flex';
+            header.style.justifyContent = 'space-between';
+            header.style.fontSize = '12px';
+            header.style.color = '#666';
+            header.style.marginBottom = '6px';
+
+            const author = document.createElement('strong');
+            author.textContent = r.nama;
+            author.style.color = '#28c25a';
+
+            const dateSpan = document.createElement('span');
+            dateSpan.textContent = new Date(r.tanggal).toLocaleString('id-ID');
+
+            header.appendChild(author);
+            header.appendChild(dateSpan);
+
+            const body = document.createElement('div');
+            body.style.fontSize = '14px';
+            body.style.color = '#333';
+            body.style.lineHeight = '1.5';
+
+            if (isNested) {
+                const reHead = document.createElement('div');
+                reHead.style.fontWeight = 'bold';
+                reHead.style.color = '#555';
+                reHead.style.fontSize = '12px';
+                reHead.style.marginBottom = '4px';
+                reHead.textContent = `Re: Diskusi Kios`;
+                body.appendChild(reHead);
+            }
+
+            const text = document.createElement('p');
+            text.textContent = r.pesan;
+            body.appendChild(text);
+
+            div.appendChild(header);
+            div.appendChild(body);
+
+            if (!isNested) {
+                const actDiv = document.createElement('div');
+                actDiv.style.textAlign = 'right';
+                actDiv.style.marginTop = '6px';
+
+                const replyBtn = document.createElement('button');
+                replyBtn.textContent = 'Reply';
+                replyBtn.style.background = 'none';
+                replyBtn.style.border = 'none';
+                replyBtn.style.color = '#0288d1';
+                replyBtn.style.fontWeight = 'bold';
+                replyBtn.style.cursor = 'pointer';
+                replyBtn.style.fontSize = '12px';
+                replyBtn.addEventListener('click', function () {
+                    document.getElementById('reply-parent-id').value = r.id;
+                    document.getElementById('replying-target-name').textContent = r.nama;
+                    document.getElementById('replying-info-bar').style.display = 'flex';
+                    document.getElementById('reply-message-input').focus();
+                });
+
+                actDiv.appendChild(replyBtn);
+                div.appendChild(actDiv);
+            }
+
+            return div;
+        }
+
+        document.getElementById('btn-cancel-reply-target').addEventListener('click', function () {
+            document.getElementById('reply-parent-id').value = '';
+            document.getElementById('replying-info-bar').style.display = 'none';
+        });
+
+        // Submit Reply
+        const formReplyThread = document.getElementById('form-reply-thread');
+        formReplyThread.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const message = document.getElementById('reply-message-input').value.trim();
+            const parentId = document.getElementById('reply-parent-id').value || null;
+
+            if (!message) return;
+
+            const replyObj = {
+                id: 'balasan_' + Date.now(),
+                topikId: activeTopikId,
+                parentId: parentId,
+                nama: currentUser + (isUserAdmin ? ' (Admin)' : ''),
+                pesan: message,
+                tanggal: new Date().toISOString()
+            };
+
+            await saveBalasanDiskusiData(replyObj);
+
+            document.getElementById('reply-message-input').value = '';
+            document.getElementById('reply-parent-id').value = '';
+            document.getElementById('replying-info-bar').style.display = 'none';
+
+            await renderBalasan(activeTopikId);
+            await loadTopikDiskusi();
+        });
+    </script>
+</body>
+
+</html>
