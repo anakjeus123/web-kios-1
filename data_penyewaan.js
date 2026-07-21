@@ -349,6 +349,7 @@ if (document.getElementById('modal-bukti')) {
 }
 
 let currentSlotDiskusi = "";
+let diskusiPollingInterval = null;
 
 async function openDiskusiModal(slot) {
     currentSlotDiskusi = slot;
@@ -357,18 +358,34 @@ async function openDiskusiModal(slot) {
     document.getElementById('replying-label-container').style.display = 'none';
     document.getElementById('modal-diskusi').style.display = 'flex';
     await loadKomentar(slot);
+
+    // Live Auto-Refresh polling setiap 3 detik
+    if (diskusiPollingInterval) clearInterval(diskusiPollingInterval);
+    diskusiPollingInterval = setInterval(async () => {
+        const modal = document.getElementById('modal-diskusi');
+        if (modal && modal.style.display === 'flex' && currentSlotDiskusi === slot) {
+            await loadKomentar(slot);
+        }
+    }, 3000);
+}
+
+function closeDataDiskusiModal() {
+    const modal = document.getElementById('modal-diskusi');
+    if (modal) modal.style.display = 'none';
+    if (diskusiPollingInterval) {
+        clearInterval(diskusiPollingInterval);
+        diskusiPollingInterval = null;
+    }
 }
 
 if (document.getElementById('close-diskusi')) {
-    document.getElementById('close-diskusi').addEventListener('click', function() {
-        document.getElementById('modal-diskusi').style.display = 'none';
-    });
+    document.getElementById('close-diskusi').addEventListener('click', closeDataDiskusiModal);
 }
 
 if (document.getElementById('modal-diskusi')) {
     document.getElementById('modal-diskusi').addEventListener('click', function(e) {
         if (e.target === this) {
-            this.style.display = 'none';
+            closeDataDiskusiModal();
         }
     });
 }
