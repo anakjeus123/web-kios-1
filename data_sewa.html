@@ -104,8 +104,8 @@
 
             async function initDataSewa() {
                 const kiosList = await getKiosData();
-                // Cari data sewa berdasarkan nama penyewa (case-insensitive)
-                const kiosSewa = kiosList.find(k => k.nama && k.nama.toLowerCase() === namaTersimpan.toLowerCase());
+                // Cari data sewa berdasarkan nama penyewa (case-insensitive & fleksibel)
+                const kiosSewa = kiosList.find(k => isNamaMatch(k.nama, namaTersimpan));
      
                 const tbody = document.getElementById('tabel-sewa-body');
                 tbody.innerHTML = '';

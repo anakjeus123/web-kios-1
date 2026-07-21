@@ -158,12 +158,29 @@ function inisialisasiDatabase() {
 // Menjalankan inisialisasi saat script ini dimuat
 inisialisasiDatabase();
 
+// Helper pencocokan nama penyewa secara fleksibel
+function isNamaMatch(namaKios, namaUser) {
+    if (!namaKios || !namaUser) return false;
+    const kClean = String(namaKios).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const uClean = String(namaUser).toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!kClean || !uClean) return false;
+    return kClean === uClean || kClean.includes(uClean) || uClean.includes(kClean);
+}
+
 // Fungsi membaca data Kios (Asinkron)
 async function getKiosData() {
     const client = getSupabase();
-    if (!client) {
-        return JSON.parse(localStorage.getItem('kiosData')) || DEFAULT_KIOS_DATA;
+    let localData = JSON.parse(localStorage.getItem('kiosData'));
+
+    if (!localData || localData.length === 0) {
+        localData = DEFAULT_KIOS_DATA;
+        localStorage.setItem('kiosData', JSON.stringify(DEFAULT_KIOS_DATA));
     }
+
+    if (!client) {
+        return localData;
+    }
+
     try {
         const { data, error } = await client
             .from('kios')
@@ -171,17 +188,49 @@ async function getKiosData() {
             .order('slot', { ascending: true });
 
         if (error) throw error;
-        
-        let mapped = data.map(mapKiosFromDB);
 
-        // Jika data dari Supabase berisi Wahyudi di slot 1, otomatis bersihkan dan timpa menjadi Wulan
-        const slot1 = mapped.find(k => k.slot === "1");
-        if (!slot1 || (slot1.nama && slot1.nama.toLowerCase().includes('wahyudi'))) {
+        // Jika Supabase masih kosong sama sekali, inisialisasi dengan DEFAULT_KIOS_DATA
+        if (!data || data.length === 0) {
             await saveKiosData(DEFAULT_KIOS_DATA);
             return DEFAULT_KIOS_DATA;
         }
 
-        return mapped;
+        let mapped = data.map(mapKiosFromDB);
+
+        // Pastikan slot 1 sampai 4 selalu ada
+        const fullSlots = ["1", "2", "3", "4"].map(slotNum => {
+            const found = mapped.find(k => String(k.slot) === String(slotNum));
+            if (found) {
+                if (found.nama && found.nama.toLowerCase().includes('wahyudi')) {
+                    found.nama = "";
+                    found.hp = "";
+                    found.mulai = "";
+                    found.durasi = "";
+                    found.selesai = "";
+                    found.statusPembayaran = "";
+                    found.harga = "";
+                    found.buktiPembayaran = "";
+                }
+                return found;
+            }
+            const def = DEFAULT_KIOS_DATA.find(d => d.slot === slotNum);
+            return def || {
+                slot: slotNum,
+                nama: "",
+                hp: "",
+                mulai: "",
+                durasi: "",
+                selesai: "",
+                statusPembayaran: "",
+                harga: "",
+                lokasi: slotNum === "1" || slotNum === "2" ? "Blok A No. " + slotNum : "Blok B No. " + (parseInt(slotNum) - 2),
+                luas: slotNum === "4" ? "5m x 5m" : slotNum === "3" ? "4m x 5m" : "4m x 4m",
+                buktiPembayaran: ""
+            };
+        });
+
+        localStorage.setItem('kiosData', JSON.stringify(fullSlots));
+        return fullSlots;
     } catch (err) {
         console.error("Gagal getKiosData dari Supabase, memuat dari localStorage:", err);
         return JSON.parse(localStorage.getItem('kiosData')) || DEFAULT_KIOS_DATA;

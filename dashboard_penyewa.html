@@ -218,13 +218,13 @@
                     const kiosList = await getKiosData();
 
                     // Hitung jumlah kios yang disewa oleh user ini
-                    const sewaSaya = kiosList.filter(k => k.nama && k.nama.toLowerCase() === namaTersimpan.toLowerCase());
+                    const sewaSaya = kiosList.filter(k => isNamaMatch(k.nama, namaTersimpan));
                     document.getElementById('kios-disewa-count').textContent = sewaSaya.length;
 
                     // Update informasi Kios 1 s/d Kios 4 secara statis menggunakan elemen HTML yang sama persis stylingnya
                     kiosList.forEach(k => {
                         const slot = k.slot;
-                        const isMilikSaya = k.nama && k.nama.toLowerCase() === namaTersimpan.toLowerCase();
+                        const isMilikSaya = isNamaMatch(k.nama, namaTersimpan);
                         const isKosong = !k.nama || k.nama.trim() === '';
 
                         const elNama = document.getElementById(`detail-nama-${slot}`);
