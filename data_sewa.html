@@ -59,11 +59,11 @@
     </div>
 
     <!-- Modal Dialog Lihat Bukti Pembayaran -->
-    <div id="modal-bukti-sewa" class="modal-overlay" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
-        <div class="modal-content" style="max-width: 500px; text-align: center; background:#fff; padding:24px; border-radius:10px; position:relative; margin: 10% auto;">
-            <span class="close-modal" id="close-bukti-sewa" style="position:absolute; right:15px; top:10px; font-size:24px; cursor:pointer;">&times;</span>
-            <h2 style="margin-bottom:15px;">Bukti Pembayaran</h2>
-            <img id="img-bukti-sewa-preview" style="max-width: 100%; max-height: 400px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" src="" alt="Bukti Pembayaran">
+    <div id="modal-bukti-sewa" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
+        <div class="modal-content" style="max-width: 500px; text-align: center; position:relative; margin:auto;">
+            <span class="close-modal" id="close-bukti-sewa" onclick="document.getElementById('modal-bukti-sewa').style.display='none'" title="Tutup">&times;</span>
+            <h2 style="margin-bottom:15px; color:#333;">Bukti Pembayaran</h2>
+            <img id="img-bukti-sewa-preview" style="max-width: 100%; max-height: 420px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" src="" alt="Bukti Pembayaran">
         </div>
     </div>
 
@@ -95,11 +95,15 @@
 
             function showBuktiModal(base64Img) {
                 document.getElementById('img-bukti-sewa-preview').src = base64Img;
-                document.getElementById('modal-bukti-sewa').style.display = 'block';
+                document.getElementById('modal-bukti-sewa').style.display = 'flex';
             }
 
             document.getElementById('close-bukti-sewa').addEventListener('click', function() {
                 document.getElementById('modal-bukti-sewa').style.display = 'none';
+            });
+
+            document.getElementById('modal-bukti-sewa').addEventListener('click', function(e) {
+                if (e.target === this) this.style.display = 'none';
             });
 
             async function initDataSewa() {

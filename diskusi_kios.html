@@ -127,10 +127,9 @@
     </div>
 
     <!-- MODAL DIALOG DETAIL TOPIK & NESTED REPLIES -->
-    <div id="modal-thread" class="modal-overlay" style="display: none;">
-        <div class="modal-content" style="max-width: 750px; max-height: 85vh; overflow-y: auto; text-align: left;">
-            <span class="close-modal" id="close-thread-modal"
-                style="float: right; font-size: 24px; cursor: pointer;">&times;</span>
+    <div id="modal-thread" class="modal-overlay" style="display: none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
+        <div class="modal-content" style="max-width: 750px; max-height: 85vh; overflow-y: auto; text-align: left; position:relative; margin:auto;">
+            <span class="close-modal" id="close-thread-modal" onclick="document.getElementById('modal-thread').style.display='none'" title="Tutup">&times;</span>
             <h2 id="thread-subject-title"
                 style="margin-bottom: 15px; border-bottom: 2px solid #28c25a; padding-bottom: 8px; color: #333;">-</h2>
 
@@ -399,8 +398,12 @@
             document.getElementById('replying-info-bar').style.display = 'none';
 
             await renderBalasan(topikId);
-            modalThread.style.display = 'block';
+            modalThread.style.display = 'flex';
         }
+
+        modalThread.addEventListener('click', function(e) {
+            if (e.target === this) this.style.display = 'none';
+        });
 
         async function renderBalasan(topikId) {
             const replies = await getBalasanDiskusiData(topikId);

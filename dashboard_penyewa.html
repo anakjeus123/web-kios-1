@@ -449,19 +449,19 @@
         </script>
 
     <!-- Modal Dialog Lihat Bukti Pembayaran -->
-    <div id="modal-bukti" class="modal-overlay" style="display:none;">
-        <div class="modal-content" style="max-width: 500px; text-align: center;">
-            <span class="close-modal" id="close-bukti" title="Tutup">&times;</span>
+    <div id="modal-bukti" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
+        <div class="modal-content" style="max-width: 500px; text-align: center; position:relative; margin:auto;">
+            <span class="close-modal" id="close-bukti" onclick="document.getElementById('modal-bukti').style.display='none'" title="Tutup">&times;</span>
             <h2 style="margin-bottom:15px; color:#333;">Bukti Pembayaran</h2>
             <img id="img-bukti-preview" style="max-width: 100%; max-height: 420px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" src="" alt="Bukti Pembayaran">
         </div>
     </div>
 
     <!-- Modal Dialog Forum Diskusi Komentar -->
-    <div id="modal-diskusi" class="modal-overlay" style="display:none;">
-        <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: left;">
-            <span class="close-modal" id="close-diskusi" title="Tutup">&times;</span>
-            <h2 id="modal-diskusi-title" style="margin-bottom:15px; border-bottom:2px solid #7e57c2; padding-bottom:8px; color:#333;">Forum Diskusi Kios</h2>
+    <div id="modal-diskusi" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
+        <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: left; position:relative; margin:auto;">
+            <span class="close-modal" id="close-diskusi" onclick="document.getElementById('modal-diskusi').style.display='none'" title="Tutup">&times;</span>
+            <h2 id="modal-diskusi-title" style="margin-bottom:15px; border-bottom:2px solid #0288d1; padding-bottom:8px; color:#333;">Forum Diskusi Kios</h2>
             
             <div id="komentar-container" style="max-height: 400px; overflow-y: auto; padding-right: 10px; margin-bottom: 20px;">
                 <!-- Komentar & Balasan akan di-render di sini secara nested -->
@@ -469,14 +469,14 @@
             
             <form id="form-tulis-komentar" style="border-top: 1px solid #eee; padding-top: 15px;">
                 <input type="hidden" id="komentar-parent-id">
-                <div class="form-group" id="replying-label-container" style="display:none; background: #e8f5e9; padding: 10px; border-radius: 6px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size: 13px; color: #2e7d32;">Membalas komentar dari <strong id="replying-to-name"></strong></span>
+                <div class="form-group" id="replying-label-container" style="display:none; background: #e3f2fd; padding: 10px; border-radius: 6px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size: 13px; color: #1976d2;">Membalas komentar dari <strong id="replying-to-name"></strong></span>
                     <button type="button" id="btn-cancel-reply" style="border:none; background:none; color:#d32f2f; cursor:pointer; font-weight:bold; font-size:12px;">Batal</button>
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <textarea id="input-komentar-teks" placeholder="Tulis komentar/diskusi Anda di sini..." rows="3" required style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:14px; resize:vertical; outline:none;"></textarea>
                 </div>
-                <button type="submit" style="background:#28c25a; color:#fff; border:none; padding:12px 20px; border-radius:6px; font-weight:bold; cursor:pointer; width:100%; font-size:15px;">Kirim Komentar</button>
+                <button type="submit" style="background:#0288d1; color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:15px; box-shadow:0 4px 12px rgba(2,136,209,0.3);">Kirim Komentar</button>
             </form>
         </div>
     </div>
