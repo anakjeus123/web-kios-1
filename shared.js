@@ -98,6 +98,9 @@ function mapKiosFromDB(k) {
 
 // Konversi dari format JS (camelCase) ke database (snake_case)
 function mapKiosToDB(k) {
+    const s = String(k.slot);
+    const defLokasi = s === "1" || s === "2" ? "Blok A No. " + s : "Blok B No. " + (parseInt(s) - 2);
+    const defLuas = s === "4" ? "5m x 5m" : s === "3" ? "4m x 5m" : "4m x 4m";
     return {
         slot: k.slot,
         nama: k.nama || "",
@@ -107,8 +110,8 @@ function mapKiosToDB(k) {
         selesai: k.selesai || "",
         status_pembayaran: k.statusPembayaran || "",
         harga: k.harga || "",
-        lokasi: k.lokasi || "",
-        luas: k.luas || "",
+        lokasi: k.lokasi || defLokasi,
+        luas: k.luas || defLuas,
         bukti_pembayaran: k.buktiPembayaran || ""
     };
 }

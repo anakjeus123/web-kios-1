@@ -33,7 +33,7 @@ async function renderTabel() {
                 <td>${k.slot}</td>
                 <td colspan="8" style="text-align: center; color: #999; font-style: italic;">— Slot Kosong —</td>
                 <td>
-                    <button class="btn-diskusi-view" data-slot="${k.slot}" style="background-color: #7e57c2; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;">💬 Diskusi</button>
+                    <button class="btn-diskusi-view" data-slot="${k.slot}">💬 Diskusi</button>
                 </td>
             `;
         } else {
@@ -41,8 +41,8 @@ async function renderTabel() {
             const sisa = hitungSisaWaktu(k.selesai);
             const badgeClass = k.statusPembayaran === 'Lunas' ? 'badge-lunas-tbl' : 'badge-belum-tbl';
             
-            const btnBuktiHtml = k.buktiPembayaran ? `<button class="btn-bukti-view" data-slot="${k.slot}" style="background-color: #0288d1; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight:600;">🔍 Bukti</button>` : '';
-            const btnDiskusiHtml = `<button class="btn-diskusi-view" data-slot="${k.slot}" style="background-color: #7e57c2; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight:600;">💬 Diskusi</button>`;
+            const btnBuktiHtml = `<button class="btn-bukti-view" data-slot="${k.slot}">🔍 Bukti</button>`;
+            const btnDiskusiHtml = `<button class="btn-diskusi-view" data-slot="${k.slot}">💬 Diskusi</button>`;
 
             tr.innerHTML = `
                 <td>${k.slot}</td>
@@ -51,7 +51,7 @@ async function renderTabel() {
                 <td>${formatTanggalIndo(k.mulai)}</td>
                 <td>${k.durasi} Tahun</td>
                 <td>${formatTanggalIndo(k.selesai)}</td>
-                <td style="font-weight:600; color:#b85c00;">${sisa}</td>
+                <td><span class="sisa-waktu-text">${sisa}</span></td>
                 <td><span class="${badgeClass}">${k.statusPembayaran}</span></td>
                 <td>${k.harga}</td>
                 <td>
@@ -164,7 +164,14 @@ formTambahSewa.addEventListener('submit', async function (event) {
     const kiosList = await getKiosData();
     const idx = kiosList.findIndex(k => k.slot === slot);
     if (idx !== -1) {
-        kiosList[idx] = { slot, nama, hp, mulai, durasi, selesai, statusPembayaran: status, harga };
+        const oldObj = kiosList[idx] || {};
+        kiosList[idx] = {
+            ...oldObj,
+            slot, nama, hp, mulai, durasi, selesai, statusPembayaran: status, harga,
+            lokasi: oldObj.lokasi || (slot === "1" || slot === "2" ? "Blok A No. " + slot : "Blok B No. " + (parseInt(slot) - 2)),
+            luas: oldObj.luas || (slot === "4" ? "5m x 5m" : slot === "3" ? "4m x 5m" : "4m x 4m"),
+            buktiPembayaran: oldObj.buktiPembayaran || ""
+        };
         await saveKiosData(kiosList);
     }
 
@@ -219,8 +226,14 @@ tabelBody.addEventListener('click', async function (event) {
             });
             await saveRiwayatData(riwayat);
 
-            // Kosongkan slot
-            kiosList[idx] = { slot: k.slot, nama: '', hp: '', mulai: '', durasi: '', selesai: '', statusPembayaran: '', harga: '' };
+            // Kosongkan slot dengan tetap menjaga data lokasi & luas
+            const oldObj = kiosList[idx] || {};
+            kiosList[idx] = {
+                slot: k.slot, nama: '', hp: '', mulai: '', durasi: '', selesai: '', statusPembayaran: '', harga: '',
+                lokasi: oldObj.lokasi || (k.slot === "1" || k.slot === "2" ? "Blok A No. " + k.slot : "Blok B No. " + (parseInt(k.slot) - 2)),
+                luas: oldObj.luas || (k.slot === "4" ? "5m x 5m" : k.slot === "3" ? "4m x 5m" : "4m x 4m"),
+                buktiPembayaran: ''
+            };
             await saveKiosData(kiosList);
 
             await renderTabel();
@@ -238,9 +251,7 @@ tabelBody.addEventListener('click', async function (event) {
     // --- TOMBOL BUKTI ---
     if (target.classList.contains('btn-bukti-view')) {
         const k = kiosList[idx];
-        if (k.buktiPembayaran) {
-            showBuktiBayarModal(k.buktiPembayaran);
-        }
+        showBuktiBayarModal(k.buktiPembayaran || '');
     }
 
     // --- TOMBOL DISKUSI ---
@@ -275,11 +286,16 @@ formEditSewa.addEventListener('submit', async function (event) {
 
     const kiosList = await getKiosData();
     if (idx >= 0 && idx < kiosList.length) {
+        const oldObj = kiosList[idx] || {};
         kiosList[idx] = {
-            slot: kiosList[idx].slot,
+            ...oldObj,
+            slot: oldObj.slot,
             nama, hp, mulai, durasi, selesai,
             statusPembayaran: status,
-            harga
+            harga,
+            lokasi: oldObj.lokasi || (oldObj.slot === "1" || oldObj.slot === "2" ? "Blok A No. " + oldObj.slot : "Blok B No. " + (parseInt(oldObj.slot) - 2)),
+            luas: oldObj.luas || (oldObj.slot === "4" ? "5m x 5m" : oldObj.slot === "3" ? "4m x 5m" : "4m x 4m"),
+            buktiPembayaran: oldObj.buktiPembayaran || ""
         };
         await saveKiosData(kiosList);
     }
@@ -304,7 +320,17 @@ init();
 const adminSenderName = localStorage.getItem('namaAdmin') || 'Admin';
 
 function showBuktiBayarModal(base64Image) {
-    document.getElementById('img-bukti-preview').src = base64Image;
+    const imgEl = document.getElementById('img-bukti-preview');
+    const noBuktiEl = document.getElementById('no-bukti-box');
+    if (base64Image && base64Image.trim() !== '') {
+        imgEl.src = base64Image;
+        imgEl.style.display = 'inline-block';
+        if (noBuktiEl) noBuktiEl.style.display = 'none';
+    } else {
+        imgEl.src = '';
+        imgEl.style.display = 'none';
+        if (noBuktiEl) noBuktiEl.style.display = 'block';
+    }
     document.getElementById('modal-bukti').style.display = 'flex';
 }
 

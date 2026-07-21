@@ -310,4 +310,76 @@ body {
 .close-modal:hover {
     color: #000;
     background-color: #f0f0f0;
+}
+
+/* ===== ACTION BUTTONS & UTILITIES ===== */
+button.btn-bukti-view,
+.btn-bukti-view {
+    background-color: #0288d1 !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    margin-right: 4px;
+    box-shadow: 0 2px 6px rgba(2, 136, 209, 0.3);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button.btn-bukti-view:hover,
+.btn-bukti-view:hover {
+    background-color: #0277bd !important;
+}
+
+.btn-bukti-view:active {
+    transform: scale(0.98);
+}
+
+.btn-diskusi-view {
+    background-color: #7e57c2;
+    color: #ffffff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-diskusi-view:hover {
+    background-color: #673ab7;
+}
+
+.btn-diskusi-view:active {
+    transform: scale(0.98);
+}
+
+.sisa-waktu-text {
+    font-weight: 600;
+    color: #b85c00;
+}
+
+.btn-submit-blue {
+    background-color: #0288d1;
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    font-size: 15px;
+    box-shadow: 0 4px 12px rgba(2, 136, 209, 0.3);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-submit-blue:hover {
+    background-color: #0277bd;
+}
+
+.btn-submit-blue:active {
+    transform: scale(0.98);
 }

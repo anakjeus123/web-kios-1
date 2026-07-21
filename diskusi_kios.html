@@ -82,22 +82,19 @@
                     <h2 style="margin-bottom: 18px; color: #333;" id="form-topic-header">Tambah Topik Diskusi Baru</h2>
                     <form id="form-new-topic">
                         <div class="form-group-topic">
-                            <label for="input-subject">Subject (Judul Topik) <span
-                                    style="color:#d32f2f;">*</span></label>
+                            <label for="input-subject">Subject <span style="color:#d32f2f;">*</span></label>
                             <input type="text" id="input-subject" placeholder="Masukkan judul topik diskusi..."
                                 required>
                         </div>
                         <div class="form-group-topic">
-                            <label for="input-message">Message (Pesan Diskusi) <span
-                                    style="color:#d32f2f;">*</span></label>
+                            <label for="input-message">Message <span style="color:#d32f2f;">*</span></label>
                             <textarea id="input-message" rows="5"
                                 placeholder="Tuliskan isi detail pertanyaan/diskusi Anda di sini..."
                                 required></textarea>
                         </div>
                         <div style="display: flex; gap: 12px;">
-                            <button type="submit" class="btn-add-topic" style="padding: 10px 20px;">Post to forum (Kirim
-                                ke Forum)</button>
-                            <button type="button" id="btn-cancel-topic" class="btn-cancel-topic">Cancel (Batal)</button>
+                            <button type="submit" class="btn-add-topic" style="padding: 10px 20px;">Post</button>
+                            <button type="button" id="btn-cancel-topic" class="btn-cancel-topic">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -109,8 +106,8 @@
                     <table class="forum-table">
                         <thead>
                             <tr>
-                                <th style="width: 45%;">Topik Diskusi (Subject)</th>
-                                <th style="width: 20%;">Oleh (Penulis)</th>
+                                <th style="width: 45%;">Topik Diskusi</th>
+                                <th style="width: 20%;">Penulis</th>
                                 <th style="width: 10%; text-align: center;">Balasan</th>
                                 <th style="width: 15%;">Waktu Terakhir</th>
                                 <th style="width: 10%; text-align: center;">Aksi</th>
@@ -127,9 +124,12 @@
     </div>
 
     <!-- MODAL DIALOG DETAIL TOPIK & NESTED REPLIES -->
-    <div id="modal-thread" class="modal-overlay" style="display: none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
-        <div class="modal-content" style="max-width: 750px; max-height: 85vh; overflow-y: auto; text-align: left; position:relative; margin:auto;">
-            <span class="close-modal" id="close-thread-modal" onclick="document.getElementById('modal-thread').style.display='none'" title="Tutup">&times;</span>
+    <div id="modal-thread" class="modal-overlay"
+        style="display: none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
+        <div class="modal-content"
+            style="max-width: 750px; max-height: 85vh; overflow-y: auto; text-align: left; position:relative; margin:auto;">
+            <span class="close-modal" id="close-thread-modal"
+                onclick="document.getElementById('modal-thread').style.display='none'" title="Tutup">&times;</span>
             <h2 id="thread-subject-title"
                 style="margin-bottom: 15px; border-bottom: 2px solid #28c25a; padding-bottom: 8px; color: #333;">-</h2>
 
@@ -171,8 +171,7 @@
                     <textarea id="reply-message-input" rows="3" placeholder="Tuliskan balasan diskusi Anda..." required
                         style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; outline: none; resize: vertical;"></textarea>
                 </div>
-                <button type="submit" class="btn-add-topic" style="padding: 10px 20px; width: 100%;">Post Reply (Kirim
-                    Balasan)</button>
+                <button type="submit" class="btn-add-topic" style="padding: 10px 20px; width: 100%;">Reply</button>
             </form>
         </div>
     </div>
@@ -401,7 +400,7 @@
             modalThread.style.display = 'flex';
         }
 
-        modalThread.addEventListener('click', function(e) {
+        modalThread.addEventListener('click', function (e) {
             if (e.target === this) this.style.display = 'none';
         });
 

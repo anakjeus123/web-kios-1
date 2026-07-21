@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style-data-sewa.css">
+    <link rel="stylesheet" href="style-data-sewa.css?v=3">
     <title>Dashboard Penyewa</title>
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,13 +17,17 @@
         <aside class="sidebar">
             <h2 class="sidebar-tittle">PENYEWA</h2>
             <ul class="sidebar-menu">
-                <li><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard"> Dashboard</a></li>
-                <li><a href="data_sewa.html" class="active"><img src="property.png" class="sidebar-icon" alt="Data Sewa"> Data Sewa</a></li>
-                <li><a href="diskusi_kios.html"><img src="property.png" class="sidebar-icon" alt="Diskusi Kios"> Diskusi Kios</a></li>
-                <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard Admin"> Dashboard Admin</a></li>
+                <li><a href="dashboard_penyewa.html"><img src="dashboard.png" class="sidebar-icon" alt="Dashboard">
+                        Dashboard</a></li>
+                <li><a href="data_sewa.html" class="active"><img src="property.png" class="sidebar-icon"
+                            alt="Data Sewa"> Data Sewa</a></li>
+                <li><a href="diskusi_kios.html"><img src="property.png" class="sidebar-icon" alt="Diskusi Kios"> Diskusi
+                        Kios</a></li>
+                <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><img src="dashboard.png"
+                            class="sidebar-icon" alt="Dashboard Admin"> Dashboard Admin</a></li>
             </ul>
         </aside>
-        
+
         <div class="main-layout">
             <header class="top-header">
                 <div class="header-right">
@@ -39,99 +43,115 @@
             </header>
 
             <main class="main-content">
-            <h2>Data Sewa</h2>
-            <table class="table-sewa">
-                <thead>
-                    <tr>
-                        <th>Nomor Slot </th>
-                        <th>Tanggal Mulai</th>
-                        <th>Durasi</th>
-                        <th>Tanggal Selesai</th>
-                        <th>Status Pembayaran</th>
-                        <th>Bukti Pembayaran</th>
-                    </tr>
-                </thead>
-                <tbody id="tabel-sewa-body">
-                    <!-- Diisi dinamis lewat script -->
-                </tbody>
-            </table>
-        </main>
-    </div>
-
-    <!-- Modal Dialog Lihat Bukti Pembayaran -->
-    <div id="modal-bukti-sewa" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
-        <div class="modal-content" style="max-width: 500px; text-align: center; position:relative; margin:auto;">
-            <span class="close-modal" id="close-bukti-sewa" onclick="document.getElementById('modal-bukti-sewa').style.display='none'" title="Tutup">&times;</span>
-            <h2 style="margin-bottom:15px; color:#333;">Bukti Pembayaran</h2>
-            <img id="img-bukti-sewa-preview" style="max-width: 100%; max-height: 420px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" src="" alt="Bukti Pembayaran">
+                <h2>Data Sewa</h2>
+                <table class="table-sewa">
+                    <thead>
+                        <tr>
+                            <th>Nomor Slot </th>
+                            <th>Tanggal Mulai</th>
+                            <th>Durasi</th>
+                            <th>Tanggal Selesai</th>
+                            <th>Status Pembayaran</th>
+                            <th>Bukti Pembayaran</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-sewa-body">
+                        <!-- Diisi dinamis lewat script -->
+                    </tbody>
+                </table>
+            </main>
         </div>
-    </div>
 
-    <!-- Panggil shared.js database lokal dan utilitas -->
-    <script src="shared.js"></script>
-    <script>
-        const namaTersimpan = localStorage.getItem('namaPenyewa');
-        if (!namaTersimpan) {
-            window.location.href = 'index.html';
-        } else {
-            // Set nama dan avatar di top header
-            document.getElementById('tenant-top-name').textContent = namaTersimpan;
-            if (namaTersimpan.trim().length > 0) {
-                document.getElementById('tenant-top-avatar').textContent = namaTersimpan.trim().charAt(0).toUpperCase();
-            }
+        <!-- Modal Dialog Lihat Bukti Pembayaran -->
+        <div id="modal-bukti-sewa" class="modal-overlay"
+            style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
+            <div class="modal-content" style="max-width: 500px; text-align: center; position:relative; margin:auto;">
+                <span class="close-modal" id="close-bukti-sewa"
+                    onclick="document.getElementById('modal-bukti-sewa').style.display='none'"
+                    title="Tutup">&times;</span>
+                <h2 style="margin-bottom:15px; color:#333;">Bukti Pembayaran</h2>
+                <img id="img-bukti-sewa-preview"
+                    style="max-width: 100%; max-height: 420px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                    src="" alt="Bukti Pembayaran">
+                <div id="no-bukti-box-sewa"
+                    style="display:none; padding:30px 20px; background:#f9f9f9; border:2px dashed #ccc; border-radius:8px; color:#666; font-size:15px; margin-top:10px;">
+                    📷 Belum ada bukti pembayaran yang diunggah. Silakan pilih file pada opsi Upload Bukti di tabel.
+                </div>
+            </div>
+        </div>
 
-            // Event Logout
-            document.querySelector('.btn-logout-header').addEventListener('click', function(e) {
-                e.preventDefault();
-                localStorage.removeItem('namaPenyewa');
-                localStorage.removeItem('namaAdmin');
+        <!-- Panggil shared.js database lokal dan utilitas -->
+        <script src="shared.js"></script>
+        <script>
+            const namaTersimpan = localStorage.getItem('namaPenyewa');
+            if (!namaTersimpan) {
                 window.location.href = 'index.html';
-            });
+            } else {
+                // Set nama dan avatar di top header
+                document.getElementById('tenant-top-name').textContent = namaTersimpan;
+                if (namaTersimpan.trim().length > 0) {
+                    document.getElementById('tenant-top-avatar').textContent = namaTersimpan.trim().charAt(0).toUpperCase();
+                }
 
-            // Tampilkan tombol Dashboard Admin jika login sebagai admin
-            if (namaTersimpan.toLowerCase() === 'abim') {
-                document.getElementById('admin-link-item').style.display = 'block';
-            }
+                // Event Logout
+                document.querySelector('.btn-logout-header').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    localStorage.removeItem('namaPenyewa');
+                    localStorage.removeItem('namaAdmin');
+                    window.location.href = 'index.html';
+                });
 
-            function showBuktiModal(base64Img) {
-                document.getElementById('img-bukti-sewa-preview').src = base64Img;
-                document.getElementById('modal-bukti-sewa').style.display = 'flex';
-            }
+                // Tampilkan tombol Dashboard Admin jika login sebagai admin
+                if (namaTersimpan.toLowerCase() === 'abim') {
+                    document.getElementById('admin-link-item').style.display = 'block';
+                }
 
-            document.getElementById('close-bukti-sewa').addEventListener('click', function() {
-                document.getElementById('modal-bukti-sewa').style.display = 'none';
-            });
+                function showBuktiModal(base64Img) {
+                    const imgEl = document.getElementById('img-bukti-sewa-preview');
+                    const noBuktiEl = document.getElementById('no-bukti-box-sewa');
+                    if (base64Img && base64Img.trim() !== '') {
+                        imgEl.src = base64Img;
+                        imgEl.style.display = 'inline-block';
+                        if (noBuktiEl) noBuktiEl.style.display = 'none';
+                    } else {
+                        imgEl.src = '';
+                        imgEl.style.display = 'none';
+                        if (noBuktiEl) noBuktiEl.style.display = 'block';
+                    }
+                    document.getElementById('modal-bukti-sewa').style.display = 'flex';
+                }
 
-            document.getElementById('modal-bukti-sewa').addEventListener('click', function(e) {
-                if (e.target === this) this.style.display = 'none';
-            });
+                document.getElementById('close-bukti-sewa').addEventListener('click', function () {
+                    document.getElementById('modal-bukti-sewa').style.display = 'none';
+                });
 
-            async function initDataSewa() {
-                const kiosList = await getKiosData();
-                // Cari data sewa berdasarkan nama penyewa (case-insensitive & fleksibel)
-                const kiosSewa = kiosList.find(k => isNamaMatch(k.nama, namaTersimpan));
-     
-                const tbody = document.getElementById('tabel-sewa-body');
-                tbody.innerHTML = '';
-     
-                if (kiosSewa) {
-                    const tr = document.createElement('tr');
-                    const badgeClass = kiosSewa.statusPembayaran === 'Lunas' ? 'badge-lunas' : 'badge-belum-lunas';
-                    
-                    let buktiTdHtml = '';
-                    if (kiosSewa.buktiPembayaran) {
-                        buktiTdHtml = `<button id="btn-view-bukti-data-sewa" style="background:#0288d1; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer; font-size:12px;">🔍 Lihat Bukti</button>`;
-                    } else if (kiosSewa.statusPembayaran !== 'Lunas') {
-                        buktiTdHtml = `
-                            <div style="font-size:12px;">
-                                <input type="file" accept="image/*" id="upload-bukti-data-sewa" style="font-size:11px;">
+                document.getElementById('modal-bukti-sewa').addEventListener('click', function (e) {
+                    if (e.target === this) this.style.display = 'none';
+                });
+
+                async function initDataSewa() {
+                    const kiosList = await getKiosData();
+                    // Cari data sewa berdasarkan nama penyewa (case-insensitive & fleksibel)
+                    const kiosSewa = kiosList.find(k => isNamaMatch(k.nama, namaTersimpan));
+
+                    const tbody = document.getElementById('tabel-sewa-body');
+                    tbody.innerHTML = '';
+
+                    if (kiosSewa) {
+                        const tr = document.createElement('tr');
+                        const badgeClass = kiosSewa.statusPembayaran === 'Lunas' ? 'badge-lunas' : 'badge-belum-lunas';
+
+                        let buktiTdHtml = `
+                            <div style="display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center;">
+                                <button id="btn-view-bukti-data-sewa" class="btn-bukti-view">🔍 Lihat Bukti</button>
+                                <div style="font-size:11px; margin-top:2px;">
+                                    <label style="display:block; font-weight:600; color:#555; margin-bottom:2px;">${kiosSewa.buktiPembayaran ? 'Ganti Bukti:' : 'Upload Bukti:'}</label>
+                                    <input type="file" accept="image/*" id="upload-bukti-data-sewa" style="font-size:10px;">
+                                </div>
                             </div>
                         `;
-                    } else {
-                        buktiTdHtml = `<span style="color:#888; font-style:italic; font-size:12px;">Lunas (Tanpa Gambar)</span>`;
-                    }
 
-                    tr.innerHTML = `
+                        tr.innerHTML = `
                         <td>${kiosSewa.slot}</td>
                         <td>${formatTanggalIndo(kiosSewa.mulai)}</td>
                         <td>${kiosSewa.durasi} Tahun</td>
@@ -139,51 +159,51 @@
                         <td align="center"><span class="${badgeClass}">${kiosSewa.statusPembayaran}</span></td>
                         <td align="center">${buktiTdHtml}</td>
                     `;
-                    tbody.appendChild(tr);
+                        tbody.appendChild(tr);
 
-                    // Event listener tombol lihat bukti
-                    const btnView = document.getElementById('btn-view-bukti-data-sewa');
-                    if (btnView) {
-                        btnView.addEventListener('click', function() {
-                            showBuktiModal(kiosSewa.buktiPembayaran);
-                        });
-                    }
+                        // Event listener tombol lihat bukti
+                        const btnView = document.getElementById('btn-view-bukti-data-sewa');
+                        if (btnView) {
+                            btnView.addEventListener('click', function () {
+                                showBuktiModal(kiosSewa.buktiPembayaran);
+                            });
+                        }
 
-                    // Event listener upload bukti
-                    const inputUpload = document.getElementById('upload-bukti-data-sewa');
-                    if (inputUpload) {
-                        inputUpload.addEventListener('change', async function(e) {
-                            const file = e.target.files[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onload = async function(evt) {
-                                    const base64String = evt.target.result;
-                                    const updatedList = await getKiosData();
-                                    const idx = updatedList.findIndex(k => k.slot === kiosSewa.slot);
-                                    if (idx !== -1) {
-                                        updatedList[idx].buktiPembayaran = base64String;
-                                        await saveKiosData(updatedList);
-                                        alert('Bukti pembayaran berhasil diunggah!');
-                                        initDataSewa();
-                                    }
-                                };
-                                reader.readAsDataURL(file);
-                            }
-                        });
-                    }
-                } else {
-                    tbody.innerHTML = `
+                        // Event listener upload bukti
+                        const inputUpload = document.getElementById('upload-bukti-data-sewa');
+                        if (inputUpload) {
+                            inputUpload.addEventListener('change', async function (e) {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = async function (evt) {
+                                        const base64String = evt.target.result;
+                                        const updatedList = await getKiosData();
+                                        const idx = updatedList.findIndex(k => k.slot === kiosSewa.slot);
+                                        if (idx !== -1) {
+                                            updatedList[idx].buktiPembayaran = base64String;
+                                            await saveKiosData(updatedList);
+                                            alert('Bukti pembayaran berhasil diunggah!');
+                                            initDataSewa();
+                                        }
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            });
+                        }
+                    } else {
+                        tbody.innerHTML = `
                         <tr>
                             <td colspan="6" style="color: #666; font-style: italic; padding: 20px;">
                                 Belum ada data penyewaan aktif. Silakan pilih kios di halaman Dashboard terlebih dahulu.
                             </td>
                         </tr>
                     `;
+                    }
                 }
+                initDataSewa();
             }
-            initDataSewa();
-        }
-    </script>
-        </div> <!-- Close main-layout -->
+        </script>
+    </div> <!-- Close main-layout -->
     </div> <!-- Close dashboard-wrapper -->
 </body>

@@ -136,8 +136,8 @@
                             const sisa = hitungSisaWaktu(k.selesai);
                             const statusKelas = k.statusPembayaran === 'Lunas' ? 'kotak-aktif' : 'kotak-mati';
 
-                            const btnBuktiHtml = k.buktiPembayaran ? `<button class="btn-bukti-view" data-slot="${k.slot}" style="background-color: #0288d1; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight:600; font-size:12px; margin-right:4px;">🔍 Bukti</button>` : '';
-                            const btnDiskusiHtml = `<button class="btn-diskusi-view" data-slot="${k.slot}" style="background-color: #7e57c2; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-weight:600; font-size:12px;">💬 Diskusi</button>`;
+                            const btnBuktiHtml = `<button class="btn-bukti-view" data-slot="${k.slot}">🔍 Bukti</button>`;
+                            const btnDiskusiHtml = `<button class="btn-diskusi-view" data-slot="${k.slot}">💬 Diskusi</button>`;
 
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
@@ -147,7 +147,7 @@
                                 <td>${k.slot}</td>
                                 <td>${formatTanggalIndo(k.mulai)}</td>
                                 <td>${formatTanggalIndo(k.selesai)}</td>
-                                <td style="font-weight:600; color:#b85c00;">${sisa}</td>
+                                <td><span class="sisa-waktu-text">${sisa}</span></td>
                                 <td>${k.harga}</td>
                                 <td><span class="${statusKelas}">${k.statusPembayaran}</span></td>
                                 <td>
@@ -171,9 +171,7 @@
 
                         if (target.classList.contains('btn-bukti-view')) {
                             const k = kiosList[idx];
-                            if (k.buktiPembayaran) {
-                                showBuktiBayarModal(k.buktiPembayaran);
-                            }
+                            showBuktiBayarModal(k.buktiPembayaran || '');
                         }
 
                         if (target.classList.contains('btn-diskusi-view')) {
@@ -189,7 +187,17 @@
                 const adminSenderName = localStorage.getItem('namaAdmin') || 'Admin';
 
                 function showBuktiBayarModal(base64Image) {
-                    document.getElementById('img-preview-box').src = base64Image;
+                    const imgEl = document.getElementById('img-preview-box');
+                    const noBuktiEl = document.getElementById('no-bukti-box-popup');
+                    if (base64Image && base64Image.trim() !== '') {
+                        imgEl.src = base64Image;
+                        imgEl.style.display = 'inline-block';
+                        if (noBuktiEl) noBuktiEl.style.display = 'none';
+                    } else {
+                        imgEl.src = '';
+                        imgEl.style.display = 'none';
+                        if (noBuktiEl) noBuktiEl.style.display = 'block';
+                    }
                     document.getElementById('modal-bukti-popup').style.display = 'flex';
                 }
 
@@ -369,20 +377,29 @@
     </div> <!-- Close dashboard-wrapper -->
 
     <!-- Modal Dialog Lihat Bukti Pembayaran -->
-    <div id="modal-bukti-popup" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
+    <div id="modal-bukti-popup" class="modal-overlay"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
         <div class="modal-content" style="max-width: 500px; text-align: center; position:relative; margin:auto;">
-            <span class="close-modal" id="close-bukti-popup" onclick="document.getElementById('modal-bukti-popup').style.display='none'" title="Tutup">&times;</span>
+            <span class="close-modal" id="close-bukti-popup"
+                onclick="document.getElementById('modal-bukti-popup').style.display='none'" title="Tutup">&times;</span>
             <h2 style="margin-bottom:15px; color:#333;">Bukti Pembayaran</h2>
             <img id="img-preview-box"
                 style="max-width: 100%; max-height: 420px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
                 src="" alt="Bukti Pembayaran">
+            <div id="no-bukti-box-popup" style="display:none; padding:30px 20px; background:#f9f9f9; border:2px dashed #ccc; border-radius:8px; color:#666; font-size:15px; margin-top:10px;">
+                📷 Belum ada bukti pembayaran yang diunggah oleh penyewa ini.
+            </div>
         </div>
     </div>
 
     <!-- Modal Dialog Forum Diskusi Komentar -->
-    <div id="modal-diskusi-popup" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
-        <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: left; position:relative; margin:auto;">
-            <span class="close-modal" id="close-diskusi-popup" onclick="document.getElementById('modal-diskusi-popup').style.display='none'" title="Tutup">&times;</span>
+    <div id="modal-diskusi-popup" class="modal-overlay"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99999;">
+        <div class="modal-content"
+            style="max-width: 600px; max-height: 85vh; overflow-y: auto; text-align: left; position:relative; margin:auto;">
+            <span class="close-modal" id="close-diskusi-popup"
+                onclick="document.getElementById('modal-diskusi-popup').style.display='none'"
+                title="Tutup">&times;</span>
             <h2 id="modal-diskusi-title-popup"
                 style="margin-bottom:15px; border-bottom:2px solid #0288d1; padding-bottom:8px; color:#333;">
                 Forum Diskusi Kios</h2>
@@ -402,13 +419,11 @@
                         style="border:none; background:none; color:#d32f2f; cursor:pointer; font-weight:bold; font-size:12px;">Batal</button>
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <textarea id="input-komentar-teks-popup"
-                        placeholder="Tulis komentar/diskusi Anda di sini..." rows="3" required
+                    <textarea id="input-komentar-teks-popup" placeholder="Tulis komentar/diskusi Anda di sini..."
+                        rows="3" required
                         style="width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; font-size:14px; resize:vertical; outline:none;"></textarea>
                 </div>
-                <button type="submit"
-                    style="background:#0288d1; color:#fff; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:15px; box-shadow:0 4px 12px rgba(2,136,209,0.3);">Kirim
-                    Komentar</button>
+                <button type="submit" class="btn-submit-blue">Kirim Komentar</button>
             </form>
         </div>
     </div>

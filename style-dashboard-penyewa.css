@@ -239,6 +239,53 @@ body {
     border-radius: 8px;
 }
 
+button.btn-action-lihat-bukti,
+.btn-action-lihat-bukti {
+    color: #ffffff !important;
+    text-decoration: none;
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #0288d1 !important;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none !important;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(2, 136, 209, 0.25);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button.btn-action-lihat-bukti:hover,
+.btn-action-lihat-bukti:hover {
+    background-color: #0277bd !important;
+}
+
+.btn-action-lihat-bukti:active {
+    transform: scale(0.98);
+}
+
+.btn-submit-blue {
+    background-color: #0288d1;
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    font-size: 15px;
+    box-shadow: 0 4px 12px rgba(2, 136, 209, 0.3);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-submit-blue:hover {
+    background-color: #0277bd;
+}
+
+.btn-submit-blue:active {
+    transform: scale(0.98);
+}
+
 
 /* Form Input Sewa Kios */
 .form-sewa-box {
