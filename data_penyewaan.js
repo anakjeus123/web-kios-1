@@ -305,12 +305,20 @@ const adminSenderName = localStorage.getItem('namaAdmin') || 'Admin';
 
 function showBuktiBayarModal(base64Image) {
     document.getElementById('img-bukti-preview').src = base64Image;
-    document.getElementById('modal-bukti').style.display = 'block';
+    document.getElementById('modal-bukti').style.display = 'flex';
 }
 
 if (document.getElementById('close-bukti')) {
     document.getElementById('close-bukti').addEventListener('click', function() {
         document.getElementById('modal-bukti').style.display = 'none';
+    });
+}
+
+if (document.getElementById('modal-bukti')) {
+    document.getElementById('modal-bukti').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
     });
 }
 
@@ -321,13 +329,21 @@ async function openDiskusiModal(slot) {
     document.getElementById('modal-diskusi-title').textContent = `Forum Diskusi Kios Slot ${slot}`;
     document.getElementById('komentar-parent-id').value = '';
     document.getElementById('replying-label-container').style.display = 'none';
-    document.getElementById('modal-diskusi').style.display = 'block';
+    document.getElementById('modal-diskusi').style.display = 'flex';
     await loadKomentar(slot);
 }
 
 if (document.getElementById('close-diskusi')) {
     document.getElementById('close-diskusi').addEventListener('click', function() {
         document.getElementById('modal-diskusi').style.display = 'none';
+    });
+}
+
+if (document.getElementById('modal-diskusi')) {
+    document.getElementById('modal-diskusi').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
     });
 }
 
