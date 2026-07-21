@@ -212,7 +212,6 @@
                 });
 
                 let currentSlotDiskusi = "";
-                let diskusiPollingInterval = null;
 
                 async function openDiskusiModal(slot) {
                     currentSlotDiskusi = slot;
@@ -221,28 +220,15 @@
                     document.getElementById('replying-label-container-popup').style.display = 'none';
                     document.getElementById('modal-diskusi-popup').style.display = 'flex';
                     await loadKomentar(slot);
-
-                    // Live Auto-Refresh polling setiap 3 detik
-                    if (diskusiPollingInterval) clearInterval(diskusiPollingInterval);
-                    diskusiPollingInterval = setInterval(async () => {
-                        if (document.getElementById('modal-diskusi-popup').style.display === 'flex' && currentSlotDiskusi === slot) {
-                            await loadKomentar(slot);
-                        }
-                    }, 3000);
                 }
 
-                function closeAdminDiskusiModal() {
+                document.getElementById('close-diskusi-popup').addEventListener('click', function () {
                     document.getElementById('modal-diskusi-popup').style.display = 'none';
-                    if (diskusiPollingInterval) {
-                        clearInterval(diskusiPollingInterval);
-                        diskusiPollingInterval = null;
-                    }
-                }
+                });
 
-                document.getElementById('close-diskusi-popup').addEventListener('click', closeAdminDiskusiModal);
                 document.getElementById('modal-diskusi-popup').addEventListener('click', function (e) {
                     if (e.target === this) {
-                        closeAdminDiskusiModal();
+                        this.style.display = 'none';
                     }
                 });
 

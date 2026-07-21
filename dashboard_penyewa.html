@@ -519,7 +519,6 @@
 
             // Modal Forum Diskusi handlers
             let currentSlotDiskusi = "";
-            let diskusiPollingInterval = null;
 
             async function openDiskusiModal(slot) {
                 currentSlotDiskusi = slot;
@@ -528,27 +527,13 @@
                 document.getElementById('replying-label-container').style.display = 'none';
                 document.getElementById('modal-diskusi').style.display = 'flex';
                 await loadKomentar(slot);
-
-                // Live Auto-Refresh polling setiap 3 detik
-                if (diskusiPollingInterval) clearInterval(diskusiPollingInterval);
-                diskusiPollingInterval = setInterval(async () => {
-                    if (document.getElementById('modal-diskusi').style.display === 'flex' && currentSlotDiskusi === slot) {
-                        await loadKomentar(slot);
-                    }
-                }, 3000);
             }
 
-            function closeDiskusiModal() {
+            document.getElementById('close-diskusi').addEventListener('click', function () {
                 document.getElementById('modal-diskusi').style.display = 'none';
-                if (diskusiPollingInterval) {
-                    clearInterval(diskusiPollingInterval);
-                    diskusiPollingInterval = null;
-                }
-            }
-
-            document.getElementById('close-diskusi').addEventListener('click', closeDiskusiModal);
+            });
             document.getElementById('modal-diskusi').addEventListener('click', function (e) {
-                if (e.target === this) closeDiskusiModal();
+                if (e.target === this) this.style.display = 'none';
             });
 
             document.getElementById('btn-cancel-reply').addEventListener('click', function () {

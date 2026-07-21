@@ -129,7 +129,7 @@
         <div class="modal-content"
             style="max-width: 750px; max-height: 85vh; overflow-y: auto; text-align: left; position:relative; margin:auto;">
             <span class="close-modal" id="close-thread-modal"
-                onclick="closeThreadModal()" title="Tutup">&times;</span>
+                onclick="document.getElementById('modal-thread').style.display='none'" title="Tutup">&times;</span>
             <h2 id="thread-subject-title"
                 style="margin-bottom: 15px; border-bottom: 2px solid #28c25a; padding-bottom: 8px; color: #333;">-</h2>
 
@@ -381,8 +381,6 @@
             }
         });
 
-        let threadPollingInterval = null;
-
         async function openThreadView(topikId) {
             const listTopik = await getTopikDiskusiData();
             const topik = listTopik.find(t => t.id === topikId);
@@ -400,32 +398,11 @@
 
             await renderBalasan(topikId);
             modalThread.style.display = 'flex';
-
-            // Mulai Auto-Sync Realtime Polling saat pop-up terbuka (tiap 3 detik)
-            if (threadPollingInterval) clearInterval(threadPollingInterval);
-            threadPollingInterval = setInterval(async () => {
-                if (modalThread.style.display === 'flex' && activeTopikId === topikId) {
-                    await renderBalasan(topikId);
-                }
-            }, 3000);
-        }
-
-        function closeThreadModal() {
-            modalThread.style.display = 'none';
-            if (threadPollingInterval) {
-                clearInterval(threadPollingInterval);
-                threadPollingInterval = null;
-            }
         }
 
         modalThread.addEventListener('click', function (e) {
-            if (e.target === this) closeThreadModal();
+            if (e.target === this) this.style.display = 'none';
         });
-
-        // Polling otomatis untuk daftar topik di halaman utama (tiap 5 detik)
-        setInterval(async () => {
-            await loadTopikDiskusi();
-        }, 5000);
 
         async function renderBalasan(topikId) {
             const replies = await getBalasanDiskusiData(topikId);
