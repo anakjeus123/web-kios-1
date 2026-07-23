@@ -18,10 +18,11 @@
                 <li><a href="dashboard_penyewa.html"><span class="icon">📊</span> Dashboard</a></li>
                 <li><a href="data_sewa.html"><span class="icon">📋</span> Data Sewa</a></li>
                 <li><a href="keluhan_penyewaan.html" class="active"><span class="icon">💬</span> Keluhan</a></li>
-                <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><span class="icon">⚙️</span> Dashboard Admin</a></li>
+                <li id="admin-link-item" style="display: none;"><a href="dashboard_admin.html"><span
+                            class="icon">⚙️</span> Dashboard Admin</a></li>
             </ul>
         </aside>
-        
+
         <div class="main-layout">
             <header class="top-header">
                 <div class="header-right">
@@ -38,8 +39,9 @@
 
             <main class="main-content">
                 <h2>Keluhan Penyewaan Kios</h2>
-                <p style="margin-bottom: 24px; color: #666; text-align: left;">Kirimkan keluhan atau kendala terkait kios Anda langsung ke WhatsApp Admin.</p>
-                
+                <p style="margin-bottom: 24px; color: #666; text-align: left;">Kirimkan keluhan atau kendala terkait
+                    kios Anda langsung ke WhatsApp Admin.</p>
+
                 <div class="keluhan-form-box">
                     <form id="form-keluhan">
                         <div class="form-group-keluhan">
@@ -52,11 +54,14 @@
                         </div>
                         <div class="form-group-keluhan">
                             <label>Subjek Keluhan:</label>
-                            <input type="text" id="keluhan-subjek" placeholder="Contoh: Lampu Kios Padam, Atap Bocor" required>
+                            <input type="text" id="keluhan-subjek" placeholder="Contoh: Lampu Kios Padam, Atap Bocor"
+                                required>
                         </div>
                         <div class="form-group-keluhan">
                             <label>Detail Kendala/Keluhan:</label>
-                            <textarea id="keluhan-deskripsi" rows="5" placeholder="Jelaskan secara rinci kendala yang Anda alami pada kios..." required></textarea>
+                            <textarea id="keluhan-deskripsi" rows="5"
+                                placeholder="Jelaskan secara rinci kendala yang Anda alami pada kios..."
+                                required></textarea>
                         </div>
                         <button type="submit" class="btn-submit-keluhan">Kirim Keluhan via WhatsApp</button>
                     </form>
@@ -88,7 +93,7 @@
             async function initKeluhan() {
                 const kiosList = await getKiosData();
                 const sewaSaya = kiosList.find(k => k.nama && k.nama.toLowerCase() === namaTersimpan.toLowerCase());
-                
+
                 const slotInput = document.getElementById('keluhan-slot');
                 if (sewaSaya) {
                     slotInput.value = `Slot ${sewaSaya.slot}`;
@@ -100,19 +105,38 @@
             initKeluhan();
 
             // Submit keluhan
-            document.getElementById('form-keluhan').addEventListener('submit', function(e) {
+            document.getElementById('form-keluhan').addEventListener('submit', function (e) {
                 e.preventDefault();
-                
+
                 const slotText = slotInput.value;
                 const subjek = document.getElementById('keluhan-subjek').value.trim();
                 const deskripsi = document.getElementById('keluhan-deskripsi').value.trim();
 
                 const pesan = `Halo Pak/Ibu Admin, saya ${namaTersimpan} (${slotText}) ingin menyampaikan keluhan.\n\n*Subjek:* ${subjek}\n*Detail Keluhan:* ${deskripsi}\n\nMohon bantuannya, terima kasih.`;
-                
+
                 bukaWhatsAppWeb(WHATSAPP_ADMIN, pesan);
             });
         }
+
+        // Handler Floating Button Hubungi Admin via Web Gmail
+        window.hubungiAdminViaEmail = function () {
+            const namaUser = (localStorage.getItem('namaPenyewa') || localStorage.getItem('namaAdmin') || 'User').trim();
+            const emailAdmin = "abimuchsin375@gmail.com";
+            const subjek = encodeURIComponent(`Pertanyaan Penyewaan Kios - ${namaUser}`);
+            const isiPesan = encodeURIComponent(`Halo Admin,\n\nSaya ${namaUser} ingin bertanya/konsultasi mengenai penyewaan kios.\n\nTerima kasih.`);
+            
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${emailAdmin}&su=${subjek}&body=${isiPesan}`;
+            window.open(gmailUrl, '_blank');
+        };
     </script>
+
+    <!-- Floating Email Button (Hubungi Admin) -->
+    <div id="floating-chat-container" style="position: fixed; bottom: 30px; right: 30px; z-index: 999999;">
+        <button id="btn-floating-email-admin" onclick="hubungiAdminViaEmail()"
+            style="background: #0288d1; color: white; border: none; padding: 14px 24px; border-radius: 50px; font-weight: 700; font-size: 14px; box-shadow: 0 6px 20px rgba(2,136,209,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+            <span>Hubungi Admin</span>
+        </button>
+    </div>
 </body>
 
 </html>

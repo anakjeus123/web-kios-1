@@ -476,3 +476,26 @@ button.btn-action-lihat-bukti:hover,
 .close-modal:hover {
     color: #333;
 }
+
+.btn-diskusi-view {
+    background-color: #0288d1 !important;
+    color: #ffffff !important;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: background-color 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-diskusi-view:hover {
+    background-color: #0277bd !important;
+}
+
+.btn-diskusi-view:active {
+    transform: scale(0.98);
+}
