@@ -364,31 +364,6 @@
                         }
                     });
 
-                    // Render Tabel Forum Diskusi & Tanya-Jawab Kios
-                    const tbodyDiskusi = document.getElementById('tabel-diskusi-penyewa-body');
-                    if (tbodyDiskusi) {
-                        tbodyDiskusi.innerHTML = '';
-                        kiosList.forEach(k => {
-                            const isKosong = !k.nama || k.nama.trim() === '';
-                            const statusBadge = isKosong
-                                ? `<span style="background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; display: inline-block;">🟢 Tersedia</span>`
-                                : `<span style="background: #fff3e0; color: #ef6c00; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; display: inline-block;">🔴 Tersewa (${k.nama})</span>`;
-
-                            const tr = document.createElement('tr');
-                            tr.style.borderBottom = '1px solid #f1f5f9';
-                            tr.innerHTML = `
-                                <td style="padding: 14px 16px; font-weight: 700; color: #1e293b;">Kios Slot ${k.slot}</td>
-                                <td style="padding: 14px 16px; color: #475569;">${k.lokasi || '-'} (${k.luas || '-'})</td>
-                                <td style="padding: 14px 16px;">${statusBadge}</td>
-                                <td style="padding: 14px 16px; text-align: center;">
-                                    <button class="btn-diskusi-view" onclick="openDiskusiModal(${k.slot})">
-                                        💬 Buka Diskusi / Tanya-Jawab
-                                    </button>
-                                </td>
-                            `;
-                            tbodyDiskusi.appendChild(tr);
-                        });
-                    }
                 }
 
                 initDashboard();

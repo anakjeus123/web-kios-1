@@ -137,7 +137,6 @@
                             const statusKelas = k.statusPembayaran === 'Lunas' ? 'kotak-aktif' : 'kotak-mati';
 
                             const btnBuktiHtml = `<button class="btn-bukti-view" data-slot="${k.slot}">🔍 Bukti</button>`;
-                            const btnDiskusiHtml = `<button class="btn-diskusi-view" data-slot="${k.slot}">💬 Diskusi</button>`;
 
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
@@ -152,7 +151,6 @@
                                 <td><span class="${statusKelas}">${k.statusPembayaran}</span></td>
                                 <td>
                                     ${btnBuktiHtml}
-                                    ${btnDiskusiHtml}
                                 </td>
                             `;
                             tbody.appendChild(tr);
@@ -172,10 +170,6 @@
                         if (target.classList.contains('btn-bukti-view')) {
                             const k = kiosList[idx];
                             showBuktiBayarModal(k.buktiPembayaran || '');
-                        }
-
-                        if (target.classList.contains('btn-diskusi-view')) {
-                            openDiskusiModal(slot);
                         }
                     });
                 }

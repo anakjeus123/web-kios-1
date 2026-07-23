@@ -32,9 +32,7 @@ async function renderTabel() {
             tr.innerHTML = `
                 <td>${k.slot}</td>
                 <td colspan="8" style="text-align: center; color: #999; font-style: italic;">— Slot Kosong —</td>
-                <td>
-                    <button class="btn-diskusi-view" data-slot="${k.slot}">💬 Diskusi</button>
-                </td>
+                <td style="text-align: center;">—</td>
             `;
         } else {
             // Slot terisi
@@ -42,7 +40,6 @@ async function renderTabel() {
             const badgeClass = k.statusPembayaran === 'Lunas' ? 'badge-lunas-tbl' : 'badge-belum-tbl';
             
             const btnBuktiHtml = `<button class="btn-bukti-view" data-slot="${k.slot}">🔍 Bukti</button>`;
-            const btnDiskusiHtml = `<button class="btn-diskusi-view" data-slot="${k.slot}">💬 Diskusi</button>`;
 
             tr.innerHTML = `
                 <td>${k.slot}</td>
@@ -59,7 +56,6 @@ async function renderTabel() {
                     <button class="btn-delete" data-slot="${k.slot}">Hapus</button>
                     <button class="btn-wa" data-slot="${k.slot}" title="Konfirmasi pembayaran via WhatsApp">WA</button>
                     ${btnBuktiHtml}
-                    ${btnDiskusiHtml}
                 </td>
             `;
         }
@@ -252,11 +248,6 @@ tabelBody.addEventListener('click', async function (event) {
     if (target.classList.contains('btn-bukti-view')) {
         const k = kiosList[idx];
         showBuktiBayarModal(k.buktiPembayaran || '');
-    }
-
-    // --- TOMBOL DISKUSI ---
-    if (target.classList.contains('btn-diskusi-view')) {
-        openDiskusiModal(slot);
     }
 });
 
