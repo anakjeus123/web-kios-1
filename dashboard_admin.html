@@ -136,7 +136,7 @@
                             const sisa = hitungSisaWaktu(k.selesai);
                             const statusKelas = k.statusPembayaran === 'Lunas' ? 'kotak-aktif' : 'kotak-mati';
 
-                            const btnBuktiHtml = `<button class="btn-bukti-view" data-slot="${k.slot}">🔍 Bukti</button>`;
+                            const btnBuktiHtml = `<button class="btn-bukti-view" data-slot="${k.slot}">Bukti Pembayaran</button>`;
 
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
@@ -380,7 +380,8 @@
             <img id="img-preview-box"
                 style="max-width: 100%; max-height: 420px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
                 src="" alt="Bukti Pembayaran">
-            <div id="no-bukti-box-popup" style="display:none; padding:30px 20px; background:#f9f9f9; border:2px dashed #ccc; border-radius:8px; color:#666; font-size:15px; margin-top:10px;">
+            <div id="no-bukti-box-popup"
+                style="display:none; padding:30px 20px; background:#f9f9f9; border:2px dashed #ccc; border-radius:8px; color:#666; font-size:15px; margin-top:10px;">
                 📷 Belum ada bukti pembayaran yang diunggah oleh penyewa ini.
             </div>
         </div>
@@ -428,7 +429,7 @@
             const emailAdmin = "abimuchsin375@gmail.com";
             const subjek = encodeURIComponent(`Pertanyaan Penyewaan Kios - ${namaUser}`);
             const isiPesan = encodeURIComponent(`Halo Admin,\n\nSaya ${namaUser} ingin bertanya/konsultasi mengenai penyewaan kios.\n\nTerima kasih.`);
-            
+
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${emailAdmin}&su=${subjek}&body=${isiPesan}`;
             window.open(gmailUrl, '_blank');
         };

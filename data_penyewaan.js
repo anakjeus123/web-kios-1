@@ -4,17 +4,17 @@
 // =========================================================
 
 // --- Elemen DOM Utama ---
-const btnTambah       = document.getElementById('btn-tambah-sewa');
-const modalTambah     = document.getElementById('modal-tambah');
-const btnBatal        = document.getElementById('btn-batal');
-const formTambahSewa  = document.getElementById('form-tambah-sewa');
+const btnTambah = document.getElementById('btn-tambah-sewa');
+const modalTambah = document.getElementById('modal-tambah');
+const btnBatal = document.getElementById('btn-batal');
+const formTambahSewa = document.getElementById('form-tambah-sewa');
 
-const modalEdit       = document.getElementById('modal-edit');
-const btnBatalEdit    = document.getElementById('btn-batal-edit');
-const formEditSewa    = document.getElementById('form-edit-sewa');
+const modalEdit = document.getElementById('modal-edit');
+const btnBatalEdit = document.getElementById('btn-batal-edit');
+const formEditSewa = document.getElementById('form-edit-sewa');
 
-const tabelBody       = document.getElementById('tabel-body-penyewaan');
-const tabelRiwayat    = document.getElementById('tabel-riwayat-body');
+const tabelBody = document.getElementById('tabel-body-penyewaan');
+const tabelRiwayat = document.getElementById('tabel-riwayat-body');
 
 // =========================================================
 // FUNGSI: Render Tabel Utama (4 Slot Kios)
@@ -38,8 +38,8 @@ async function renderTabel() {
             // Slot terisi
             const sisa = hitungSisaWaktu(k.selesai);
             const badgeClass = k.statusPembayaran === 'Lunas' ? 'badge-lunas-tbl' : 'badge-belum-tbl';
-            
-            const btnBuktiHtml = `<button class="btn-bukti-view" data-slot="${k.slot}">🔍 Bukti</button>`;
+
+            const btnBuktiHtml = `<button class="btn-bukti-view" data-slot="${k.slot}">Bukti Pembayaran</button>`;
 
             tr.innerHTML = `
                 <td>${k.slot}</td>
@@ -141,13 +141,13 @@ btnBatal.addEventListener('click', function () {
 formTambahSewa.addEventListener('submit', async function (event) {
     event.preventDefault();
 
-    const slot   = document.getElementById('input-slot').value;
-    const nama   = document.getElementById('input-nama').value.trim();
-    const hp     = document.getElementById('input-hp').value.trim();
-    const mulai  = document.getElementById('input-mulai').value;
+    const slot = document.getElementById('input-slot').value;
+    const nama = document.getElementById('input-nama').value.trim();
+    const hp = document.getElementById('input-hp').value.trim();
+    const mulai = document.getElementById('input-mulai').value;
     const durasi = document.getElementById('input-durasi').value;
     const status = document.getElementById('input-status').value;
-    const harga  = document.getElementById('input-harga').value.trim();
+    const harga = document.getElementById('input-harga').value.trim();
 
     if (!slot) {
         alert('Tidak ada slot kosong tersedia!');
@@ -264,13 +264,13 @@ btnBatalEdit.addEventListener('click', function () {
 formEditSewa.addEventListener('submit', async function (event) {
     event.preventDefault();
 
-    const idx    = parseInt(document.getElementById('edit-slot-index').value);
-    const nama   = document.getElementById('edit-nama').value.trim();
-    const hp     = document.getElementById('edit-hp').value.trim();
-    const mulai  = document.getElementById('edit-mulai').value;
+    const idx = parseInt(document.getElementById('edit-slot-index').value);
+    const nama = document.getElementById('edit-nama').value.trim();
+    const hp = document.getElementById('edit-hp').value.trim();
+    const mulai = document.getElementById('edit-mulai').value;
     const durasi = document.getElementById('edit-durasi').value;
     const status = document.getElementById('edit-status').value;
-    const harga  = document.getElementById('edit-harga').value.trim();
+    const harga = document.getElementById('edit-harga').value.trim();
 
     // Hitung ulang tanggal selesai berdasarkan durasi baru
     const selesai = hitungTanggalSelesai(mulai, durasi);
@@ -326,13 +326,13 @@ function showBuktiBayarModal(base64Image) {
 }
 
 if (document.getElementById('close-bukti')) {
-    document.getElementById('close-bukti').addEventListener('click', function() {
+    document.getElementById('close-bukti').addEventListener('click', function () {
         document.getElementById('modal-bukti').style.display = 'none';
     });
 }
 
 if (document.getElementById('modal-bukti')) {
-    document.getElementById('modal-bukti').addEventListener('click', function(e) {
+    document.getElementById('modal-bukti').addEventListener('click', function (e) {
         if (e.target === this) {
             this.style.display = 'none';
         }
@@ -351,13 +351,13 @@ async function openDiskusiModal(slot) {
 }
 
 if (document.getElementById('close-diskusi')) {
-    document.getElementById('close-diskusi').addEventListener('click', function() {
+    document.getElementById('close-diskusi').addEventListener('click', function () {
         document.getElementById('modal-diskusi').style.display = 'none';
     });
 }
 
 if (document.getElementById('modal-diskusi')) {
-    document.getElementById('modal-diskusi').addEventListener('click', function(e) {
+    document.getElementById('modal-diskusi').addEventListener('click', function (e) {
         if (e.target === this) {
             this.style.display = 'none';
         }
@@ -365,7 +365,7 @@ if (document.getElementById('modal-diskusi')) {
 }
 
 if (document.getElementById('btn-cancel-reply')) {
-    document.getElementById('btn-cancel-reply').addEventListener('click', function() {
+    document.getElementById('btn-cancel-reply').addEventListener('click', function () {
         document.getElementById('komentar-parent-id').value = '';
         document.getElementById('replying-label-container').style.display = 'none';
     });
@@ -466,7 +466,7 @@ function createCommentElement(c, isReply) {
         replyBtn.style.fontWeight = 'bold';
         replyBtn.style.cursor = 'pointer';
         replyBtn.style.fontSize = '12px';
-        replyBtn.addEventListener('click', function() {
+        replyBtn.addEventListener('click', function () {
             document.getElementById('komentar-parent-id').value = c.id;
             document.getElementById('replying-to-name').textContent = c.nama;
             document.getElementById('replying-label-container').style.display = 'flex';
@@ -482,7 +482,7 @@ function createCommentElement(c, isReply) {
 
 // Submit komentar baru (Admin)
 if (document.getElementById('form-tulis-komentar')) {
-    document.getElementById('form-tulis-komentar').addEventListener('submit', async function(e) {
+    document.getElementById('form-tulis-komentar').addEventListener('submit', async function (e) {
         e.preventDefault();
         const textInput = document.getElementById('input-komentar-teks');
         const parentIdInput = document.getElementById('komentar-parent-id');

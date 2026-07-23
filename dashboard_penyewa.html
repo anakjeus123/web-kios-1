@@ -344,7 +344,7 @@
                                 btnContainer.appendChild(uploadDiv);
 
                                 const btnLihatBukti = document.createElement('button');
-                                btnLihatBukti.textContent = '🔍 Lihat Bukti Bayar';
+                                btnLihatBukti.textContent = 'Lihat Bukti Pembayaran';
                                 btnLihatBukti.className = 'btn-action-lihat-bukti';
                                 btnLihatBukti.addEventListener('click', function (e) {
                                     e.preventDefault();
@@ -364,6 +364,31 @@
                         }
                     });
 
+                    // Render Tabel Forum Diskusi & Tanya-Jawab Kios
+                    const tbodyDiskusi = document.getElementById('tabel-diskusi-penyewa-body');
+                    if (tbodyDiskusi) {
+                        tbodyDiskusi.innerHTML = '';
+                        kiosList.forEach(k => {
+                            const isKosong = !k.nama || k.nama.trim() === '';
+                            const statusBadge = isKosong
+                                ? `<span style="background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; display: inline-block;">🟢 Tersedia</span>`
+                                : `<span style="background: #fff3e0; color: #ef6c00; padding: 4px 10px; border-radius: 12px; font-weight: 600; font-size: 12px; display: inline-block;">🔴 Tersewa (${k.nama})</span>`;
+
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid #f1f5f9';
+                            tr.innerHTML = `
+                                <td style="padding: 14px 16px; font-weight: 700; color: #1e293b;">Kios Slot ${k.slot}</td>
+                                <td style="padding: 14px 16px; color: #475569;">${k.lokasi || '-'} (${k.luas || '-'})</td>
+                                <td style="padding: 14px 16px;">${statusBadge}</td>
+                                <td style="padding: 14px 16px; text-align: center;">
+                                    <button class="btn-diskusi-view" onclick="openDiskusiModal(${k.slot})">
+                                        💬 Buka Diskusi / Tanya-Jawab
+                                    </button>
+                                </td>
+                            `;
+                            tbodyDiskusi.appendChild(tr);
+                        });
+                    }
                 }
 
                 initDashboard();
@@ -689,7 +714,8 @@
     <!-- Floating Email Button (Hubungi Admin) -->
     <div id="floating-chat-container" style="position: fixed; bottom: 30px; right: 30px; z-index: 999999;">
         <button id="btn-floating-email-admin" onclick="hubungiAdminViaEmail()"
-            style="background: #0288d1; color: white; border: none; padding: 14px 24px; border-radius: 50px; font-weight: 700; font-size: 14px; box-shadow: 0 6px 20px rgba(2,136,209,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+            style="background: #0288d1; color: white; border: none; padding: 14px 24px; border-radius: 50px; font-weight: 700; font-size: 14px; box-shadow: 0 6px 20px rgba(2,136,209,0.5); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: transform 0.2s;">
+            <span style="font-size: 18px;"></span>
             <span>Hubungi Admin</span>
         </button>
     </div>
