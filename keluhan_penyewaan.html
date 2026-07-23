@@ -124,7 +124,7 @@
             const emailAdmin = "abimuchsin375@gmail.com";
             const subjek = encodeURIComponent(`Pertanyaan Penyewaan Kios - ${namaUser}`);
             const isiPesan = encodeURIComponent(`Halo Admin,\n\nSaya ${namaUser} ingin bertanya/konsultasi mengenai penyewaan kios.\n\nTerima kasih.`);
-            
+
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${emailAdmin}&su=${subjek}&body=${isiPesan}`;
             window.open(gmailUrl, '_blank');
         };
