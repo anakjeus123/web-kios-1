@@ -58,9 +58,9 @@ loginForm.addEventListener('submit', async function (event) {
                 .from('akun_penyewa')
                 .select('*')
                 .ilike('username', usernameInput);
-            
+
             if (error) throw error;
-            
+
             databaseTerhubung = true; // Koneksi ke Supabase berhasil
 
             if (data && data.length > 0) {
@@ -141,7 +141,7 @@ linkDaftar.addEventListener('click', async function (e) {
                 .from('akun_penyewa')
                 .select('username')
                 .ilike('username', usernameClean);
-            
+
             if (error) throw error;
             if (data && data.length > 0) {
                 alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
@@ -152,7 +152,7 @@ linkDaftar.addEventListener('click', async function (e) {
             const { error: insertError } = await client
                 .from('akun_penyewa')
                 .insert([{ username: usernameClean, password: passwordClean }]);
-            
+
             if (insertError) throw insertError;
             terdaftar = true;
         } catch (err) {
@@ -165,7 +165,7 @@ linkDaftar.addEventListener('click', async function (e) {
     // Selalu simpan ke localStorage juga sebagai cadangan
     const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
     const sudahAda = akunList.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
-    
+
     if (!client) {
         if (sudahAda) {
             alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
@@ -216,7 +216,7 @@ if (linkLupa) {
                     .from('akun_penyewa')
                     .select('*')
                     .ilike('username', usernameClean);
-                
+
                 if (error) throw error;
                 if (data && data.length > 0) {
                     userDitemukan = true;
@@ -229,7 +229,7 @@ if (linkLupa) {
         // Cek localStorage jika Supabase tidak aktif atau tidak ditemukan
         const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
         const indexAkun = akunList.findIndex(a => a.username.toLowerCase() === usernameClean.toLowerCase());
-        
+
         if (!client) {
             userDitemukan = indexAkun !== -1;
         }
@@ -256,7 +256,7 @@ if (linkLupa) {
                     .from('akun_penyewa')
                     .update({ password: passwordClean })
                     .ilike('username', usernameClean);
-                
+
                 if (error) throw error;
                 resetBerhasil = true;
             } catch (err) {

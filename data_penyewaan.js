@@ -164,7 +164,7 @@ formTambahSewa.addEventListener('submit', async function (event) {
         kiosList[idx] = {
             ...oldObj,
             slot, nama, hp, mulai, durasi, selesai, statusPembayaran: status, harga,
-            lokasi: oldObj.lokasi || (slot === "1" || slot === "2" ? "Blok A No. " + slot : "Blok B No. " + (parseInt(slot) - 2)),
+            lokasi: oldObj.lokasi || "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416",
             luas: oldObj.luas || (slot === "4" ? "5m x 5m" : slot === "3" ? "4m x 5m" : "4m x 4m"),
             buktiPembayaran: oldObj.buktiPembayaran || ""
         };
@@ -226,7 +226,7 @@ tabelBody.addEventListener('click', async function (event) {
             const oldObj = kiosList[idx] || {};
             kiosList[idx] = {
                 slot: k.slot, nama: '', hp: '', mulai: '', durasi: '', selesai: '', statusPembayaran: '', harga: '',
-                lokasi: oldObj.lokasi || (k.slot === "1" || k.slot === "2" ? "Blok A No. " + k.slot : "Blok B No. " + (parseInt(k.slot) - 2)),
+                lokasi: oldObj.lokasi || "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416",
                 luas: oldObj.luas || (k.slot === "4" ? "5m x 5m" : k.slot === "3" ? "4m x 5m" : "4m x 4m"),
                 buktiPembayaran: ''
             };
@@ -284,7 +284,7 @@ formEditSewa.addEventListener('submit', async function (event) {
             nama, hp, mulai, durasi, selesai,
             statusPembayaran: status,
             harga,
-            lokasi: oldObj.lokasi || (oldObj.slot === "1" || oldObj.slot === "2" ? "Blok A No. " + oldObj.slot : "Blok B No. " + (parseInt(oldObj.slot) - 2)),
+            lokasi: oldObj.lokasi || "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416",
             luas: oldObj.luas || (oldObj.slot === "4" ? "5m x 5m" : oldObj.slot === "3" ? "4m x 5m" : "4m x 4m"),
             buktiPembayaran: oldObj.buktiPembayaran || ""
         };

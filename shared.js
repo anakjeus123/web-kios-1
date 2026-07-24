@@ -34,7 +34,7 @@ const DEFAULT_KIOS_DATA = [
         selesai: "2028-07-12",
         statusPembayaran: "Lunas",
         harga: "Rp. 20.000.000",
-        lokasi: "Blok A No. 1",
+        lokasi: "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416",
         luas: "4m x 4m",
         buktiPembayaran: ""
     },
@@ -47,7 +47,7 @@ const DEFAULT_KIOS_DATA = [
         selesai: "",
         statusPembayaran: "",
         harga: "",
-        lokasi: "Blok A No. 2",
+        lokasi: "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416",
         luas: "4m x 4m",
         buktiPembayaran: ""
     },
@@ -60,7 +60,7 @@ const DEFAULT_KIOS_DATA = [
         selesai: "",
         statusPembayaran: "",
         harga: "",
-        lokasi: "Blok B No. 1",
+        lokasi: "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416",
         luas: "4m x 5m",
         buktiPembayaran: ""
     },
@@ -73,7 +73,7 @@ const DEFAULT_KIOS_DATA = [
         selesai: "",
         statusPembayaran: "",
         harga: "",
-        lokasi: "Blok B No. 2",
+        lokasi: "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416",
         luas: "5m x 5m",
         buktiPembayaran: ""
     }
@@ -81,6 +81,11 @@ const DEFAULT_KIOS_DATA = [
 
 // Konversi dari database (snake_case) ke format JS (camelCase)
 function mapKiosFromDB(k) {
+    const alamatLengkap = "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416";
+    let lokasiVal = k.lokasi || "";
+    if (!lokasiVal || lokasiVal.includes("Blok")) {
+        lokasiVal = alamatLengkap;
+    }
     return {
         slot: k.slot,
         nama: k.nama || "",
@@ -90,7 +95,7 @@ function mapKiosFromDB(k) {
         selesai: k.selesai || "",
         statusPembayaran: k.status_pembayaran || "",
         harga: k.harga || "",
-        lokasi: k.lokasi || (k.slot === "1" || k.slot === "2" ? "Blok A No. " + k.slot : "Blok B No. " + (parseInt(k.slot) - 2)),
+        lokasi: lokasiVal,
         luas: k.luas || (k.slot === "4" ? "5m x 5m" : k.slot === "3" ? "4m x 5m" : "4m x 4m"),
         buktiPembayaran: k.bukti_pembayaran || ""
     };
@@ -99,7 +104,7 @@ function mapKiosFromDB(k) {
 // Konversi dari format JS (camelCase) ke database (snake_case)
 function mapKiosToDB(k) {
     const s = String(k.slot);
-    const defLokasi = s === "1" || s === "2" ? "Blok A No. " + s : "Blok B No. " + (parseInt(s) - 2);
+    const defLokasi = "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416";
     const defLuas = s === "4" ? "5m x 5m" : s === "3" ? "4m x 5m" : "4m x 4m";
     return {
         slot: k.slot,
@@ -121,11 +126,11 @@ function mapRiwayatFromDB(r) {
     return {
         slot: r.slot,
         nama: r.nama,
-        hp: r.hp || "",
-        mulai: r.mulai || "",
-        durasi: r.durasi || "",
-        selesai: r.selesai || "",
-        status: r.status || "",
+        hp: r.hp,
+        mulai: r.mulai,
+        durasi: r.durasi,
+        selesai: r.selesai,
+        status: r.status,
         tanggalAksi: r.tanggal_aksi
     };
 }
@@ -135,11 +140,11 @@ function mapRiwayatToDB(r) {
     return {
         slot: r.slot,
         nama: r.nama,
-        hp: r.hp || "",
-        mulai: r.mulai || "",
-        durasi: r.durasi || "",
-        selesai: r.selesai || "",
-        status: r.status || "",
+        hp: r.hp,
+        mulai: r.mulai,
+        durasi: r.durasi,
+        selesai: r.selesai,
+        status: r.status,
         tanggal_aksi: r.tanggalAksi
     };
 }
@@ -172,15 +177,12 @@ function isNamaMatch(namaKios, namaUser) {
 
 // Fungsi membaca data Kios (Asinkron)
 async function getKiosData() {
+    const alamatLengkap = "Jl. Raya Bogor No.32, Cisalak, Kec. Sukmajaya, Kota Depok, Jawa Barat 16416";
     const client = getSupabase();
-    let localData = JSON.parse(localStorage.getItem('kiosData'));
-
-    if (!localData || localData.length === 0) {
-        localData = DEFAULT_KIOS_DATA;
-        localStorage.setItem('kiosData', JSON.stringify(DEFAULT_KIOS_DATA));
-    }
-
     if (!client) {
+        let localData = JSON.parse(localStorage.getItem('kiosData')) || DEFAULT_KIOS_DATA;
+        localData = localData.map(k => ({ ...k, lokasi: alamatLengkap }));
+        localStorage.setItem('kiosData', JSON.stringify(localData));
         return localData;
     }
 
@@ -191,12 +193,6 @@ async function getKiosData() {
             .order('slot', { ascending: true });
 
         if (error) throw error;
-
-        // Jika Supabase masih kosong sama sekali, inisialisasi dengan DEFAULT_KIOS_DATA
-        if (!data || data.length === 0) {
-            await saveKiosData(DEFAULT_KIOS_DATA);
-            return DEFAULT_KIOS_DATA;
-        }
 
         let mapped = data.map(mapKiosFromDB);
 
@@ -214,6 +210,7 @@ async function getKiosData() {
                     found.harga = "";
                     found.buktiPembayaran = "";
                 }
+                found.lokasi = alamatLengkap;
                 return found;
             }
             const def = DEFAULT_KIOS_DATA.find(d => d.slot === slotNum);
@@ -226,17 +223,28 @@ async function getKiosData() {
                 selesai: "",
                 statusPembayaran: "",
                 harga: "",
-                lokasi: slotNum === "1" || slotNum === "2" ? "Blok A No. " + slotNum : "Blok B No. " + (parseInt(slotNum) - 2),
+                lokasi: alamatLengkap,
                 luas: slotNum === "4" ? "5m x 5m" : slotNum === "3" ? "4m x 5m" : "4m x 4m",
                 buktiPembayaran: ""
             };
         });
 
         localStorage.setItem('kiosData', JSON.stringify(fullSlots));
+
+        // Sync ke Supabase untuk meng-update database
+        try {
+            await client.from('kios').upsert(fullSlots.map(mapKiosToDB), { onConflict: 'slot' });
+        } catch (e) {
+            console.log("Auto-sync lokasi ke Supabase:", e);
+        }
+
         return fullSlots;
     } catch (err) {
         console.error("Gagal getKiosData dari Supabase, memuat dari localStorage:", err);
-        return JSON.parse(localStorage.getItem('kiosData')) || DEFAULT_KIOS_DATA;
+        let localData = JSON.parse(localStorage.getItem('kiosData')) || DEFAULT_KIOS_DATA;
+        localData = localData.map(k => ({ ...k, lokasi: alamatLengkap }));
+        localStorage.setItem('kiosData', JSON.stringify(localData));
+        return localData;
     }
 }
 
@@ -619,7 +627,7 @@ window.hubungiAdminViaEmail = function () {
     const emailAdmin = "abimuchsin375@gmail.com";
     const subjek = encodeURIComponent(`Pertanyaan Penyewaan Kios - ${namaUser}`);
     const isiPesan = encodeURIComponent(`Halo Admin,\n\nSaya ${namaUser} ingin bertanya/konsultasi mengenai penyewaan kios.\n\nTerima kasih.`);
-    
+
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${emailAdmin}&su=${subjek}&body=${isiPesan}`;
     window.open(gmailUrl, '_blank');
 };
