@@ -632,48 +632,4 @@ window.hubungiAdminViaEmail = function () {
     window.open(gmailUrl, '_blank');
 };
 
-// Inisialisasi Otomatis Tombol Melayang Hubungi Admin (Khusus Penyewa)
-function renderFloatingEmailButton() {
-    const namaAdmin = localStorage.getItem('namaAdmin');
-    const namaPenyewa = localStorage.getItem('namaPenyewa') || '';
-    const currentUser = (namaPenyewa || namaAdmin || '').trim();
-    const isUserAdmin = (currentUser.toLowerCase() === 'abim' || !!namaAdmin);
 
-    const path = window.location.pathname.toLowerCase();
-    const urlParams = new URLSearchParams(window.location.search);
-    const isModeAdmin = (urlParams.get('mode') === 'admin') || path.includes('admin') || path.includes('data_penyewaan');
-
-    // Jika pengguna adalah Admin atau sedang di mode Admin, sembunyikan/hapus tombol Hubungi Admin!
-    if (isUserAdmin || isModeAdmin) {
-        const existing = document.getElementById('floating-chat-container');
-        if (existing) existing.style.display = 'none';
-        return;
-    }
-
-    // Kecualikan jika di halaman login/index
-    if (path.endsWith('index.html') || path.endsWith('login_admin.html')) return;
-
-    let container = document.getElementById('floating-chat-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'floating-chat-container';
-        container.style.cssText = 'position: fixed; bottom: 30px; right: 30px; z-index: 999999;';
-
-        container.innerHTML = `
-            <button id="btn-floating-email-admin" onclick="hubungiAdminViaEmail()"
-                style="background: #0288d1; color: white; border: none; padding: 14px 24px; border-radius: 50px; font-weight: 700; font-size: 14px; box-shadow: 0 6px 20px rgba(2,136,209,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
-                <span>Hubungi Admin</span>
-            </button>
-        `;
-
-        document.body.appendChild(container);
-    } else {
-        container.style.display = 'block';
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderFloatingEmailButton);
-} else {
-    renderFloatingEmailButton();
-}

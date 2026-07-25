@@ -189,7 +189,14 @@ linkDaftar.addEventListener('click', async function (e) {
     }
 
     if (terdaftar) {
-        alert("Akun '" + usernameClean + "' berhasil dibuat!\nSilakan login menggunakan username dan password Anda.");
+        alert("Akun berhasil dibuat.\n\nUsername '" + usernameClean + "' telah terdaftar.\nSilakan login menggunakan username dan password Anda.");
+        const usernameEl = document.getElementById('username');
+        const passwordEl = document.getElementById('password');
+        if (usernameEl) usernameEl.value = usernameClean;
+        if (passwordEl) {
+            passwordEl.value = "";
+            passwordEl.focus();
+        }
     }
 });
 
