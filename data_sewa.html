@@ -65,18 +65,12 @@
         </div>
 
         <!-- Modal Dialog Lihat Bukti Pembayaran -->
-        <div id="modal-bukti-sewa" class="modal-overlay"
-            style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.65); justify-content:center; align-items:center; z-index:99999;">
-            <div class="modal-content" style="background:#ffffff; padding:24px 30px; border-radius:12px; max-width:520px; width:90%; text-align:center; position:relative; margin:auto; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
-                <span class="close-modal" id="close-bukti-sewa"
-                    onclick="document.getElementById('modal-bukti-sewa').style.display='none'"
-                    title="Tutup" style="position:absolute; top:12px; right:18px; font-size:24px; font-weight:bold; color:#888; cursor:pointer;">&times;</span>
-                <h2 style="margin-bottom:15px; color:#333; font-size:20px;">Bukti Pembayaran</h2>
-                <img id="img-bukti-sewa-preview"
-                    style="max-width: 100%; max-height: 420px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
-                    src="" alt="Bukti Pembayaran">
-                <div id="no-bukti-box-sewa"
-                    style="display:none; padding:30px 20px; background:#f9f9f9; border:2px dashed #ccc; border-radius:8px; color:#666; font-size:15px; margin-top:10px;">
+        <div id="modal-bukti-sewa" class="modal-overlay">
+            <div class="modal-content">
+                <span class="close-modal" id="close-bukti-sewa" title="Tutup">&times;</span>
+                <h2>Bukti Pembayaran</h2>
+                <img id="img-bukti-sewa-preview" src="" alt="Bukti Pembayaran">
+                <div id="no-bukti-box-sewa">
                     📷 Belum ada bukti pembayaran yang diunggah. Silakan pilih file pada opsi Upload Bukti di tabel.
                 </div>
             </div>
@@ -144,11 +138,11 @@
                         const badgeClass = kiosSewa.statusPembayaran === 'Lunas' ? 'badge-lunas' : 'badge-belum-lunas';
 
                         let buktiTdHtml = `
-                            <div style="display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center;">
+                            <div class="bukti-container-box">
                                 <button id="btn-view-bukti-data-sewa" class="btn-bukti-view">Lihat Bukti Pembayaran</button>
-                                <div style="font-size:11px; margin-top:2px;">
-                                    <label style="display:block; font-weight:600; color:#555; margin-bottom:2px;">${kiosSewa.buktiPembayaran ? 'Ganti Bukti:' : 'Upload Bukti:'}</label>
-                                    <input type="file" accept="image/*" id="upload-bukti-data-sewa" style="font-size:10px;">
+                                <div class="upload-wrapper-box">
+                                    <label class="upload-label-text">${kiosSewa.buktiPembayaran ? 'Ganti Bukti:' : 'Upload Bukti:'}</label>
+                                    <input type="file" accept="image/*" id="upload-bukti-data-sewa" class="upload-file-input">
                                 </div>
                             </div>
                         `;
@@ -196,7 +190,7 @@
                     } else {
                         tbody.innerHTML = `
                         <tr>
-                            <td colspan="6" style="color: #666; font-style: italic; padding: 20px;">
+                            <td colspan="6" class="empty-table-msg">
                                 Belum ada data penyewaan aktif. Silakan pilih kios di halaman Dashboard terlebih dahulu.
                             </td>
                         </tr>
@@ -205,17 +199,6 @@
                 }
                 initDataSewa();
             }
-
-            // Handler Floating Button Hubungi Admin via Web Gmail
-            window.hubungiAdminViaEmail = function () {
-                const namaUser = (localStorage.getItem('namaPenyewa') || 'Penyewa').trim();
-                const emailAdmin = "abimuchsin375@gmail.com";
-                const subjek = encodeURIComponent(`Pertanyaan Penyewaan Kios - ${namaUser}`);
-                const isiPesan = encodeURIComponent(`Halo Admin,\n\nSaya ${namaUser} ingin bertanya/konsultasi mengenai penyewaan kios.\n\nTerima kasih.`);
-                
-                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${emailAdmin}&su=${subjek}&body=${isiPesan}`;
-                window.open(gmailUrl, '_blank');
-            };
         </script>
 
     </div> <!-- Close main-layout -->

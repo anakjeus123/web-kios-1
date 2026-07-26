@@ -227,10 +227,102 @@ button.btn-bukti-view:active,
     transform: scale(0.98);
 }
 
-/* Modal Dialog Bukti Pembayaran Styling */
+/* 6. Styling Khusus Modal & Elemen data_sewa.html */
+#admin-link-item {
+    display: none;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.65);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
 .modal-content {
-    background-color: #ffffff !important;
-    padding: 24px 30px !important;
-    border-radius: 12px !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+    background-color: #ffffff;
+    padding: 24px 30px;
+    border-radius: 12px;
+    max-width: 520px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    margin: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h2 {
+    margin-bottom: 15px;
+    color: #333333;
+    font-size: 20px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #888888;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: #333333;
+}
+
+#img-bukti-sewa-preview {
+    max-width: 100%;
+    max-height: 420px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+#no-bukti-box-sewa {
+    display: none;
+    padding: 30px 20px;
+    background: #f9f9f9;
+    border: 2px dashed #cccccc;
+    border-radius: 8px;
+    color: #666666;
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+.bukti-container-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-wrapper-box {
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.upload-label-text {
+    display: block;
+    font-weight: 600;
+    color: #555555;
+    margin-bottom: 2px;
+}
+
+.upload-file-input {
+    font-size: 10px;
+}
+
+.empty-table-msg {
+    color: #666666;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
 }
