@@ -226,3 +226,11 @@ button.btn-bukti-view:active,
 .btn-bukti-view:active {
     transform: scale(0.98);
 }
+
+/* Modal Dialog Bukti Pembayaran Styling */
+.modal-content {
+    background-color: #ffffff !important;
+    padding: 24px 30px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+}
