@@ -469,28 +469,60 @@ async function getTopikDiskusiData(slotFilter) {
     let topics = [];
     if (!client) {
         topics = JSON.parse(localStorage.getItem('topikDiskusiKios')) || [];
+        const localBalasan = JSON.parse(localStorage.getItem('balasanDiskusiKios')) || [];
+        topics = topics.map(t => {
+            const replies = localBalasan.filter(b => b.topikId === t.id);
+            const count = replies.length;
+            const lastTime = count > 0 ? replies[replies.length - 1].tanggal : (t.waktuTerakhir || t.tanggal);
+            return {
+                ...t,
+                balasanCount: count,
+                waktuTerakhir: lastTime
+            };
+        });
     } else {
         try {
             let query = client.from('topik_diskusi').select('*').order('created_at', { ascending: false });
             if (slotFilter) {
                 query = query.eq('slot', slotFilter);
             }
-            const { data, error } = await query;
-            if (error) throw error;
-            topics = data.map(t => ({
-                id: t.id,
-                slot: t.slot || "1",
-                subject: t.subject,
-                nama: t.nama,
-                role: t.role,
-                pesan: t.pesan,
-                tanggal: t.created_at,
-                balasanCount: t.balasan_count || 0,
-                waktuTerakhir: t.waktu_terakhir || t.created_at
-            }));
+            const { data: topicsData, error: topicsErr } = await query;
+            if (topicsErr) throw topicsErr;
+
+            // Membaca seluruh data balasan untuk menghitung secara presisi
+            const { data: balasanData } = await client.from('balasan_diskusi').select('*').order('created_at', { ascending: true });
+            const allBalasan = balasanData || [];
+
+            topics = topicsData.map(t => {
+                const replies = allBalasan.filter(b => b.topik_id === t.id);
+                const count = replies.length;
+                const lastTime = count > 0 ? replies[replies.length - 1].created_at : (t.waktu_terakhir || t.created_at);
+                return {
+                    id: t.id,
+                    slot: t.slot || "1",
+                    subject: t.subject,
+                    nama: t.nama,
+                    role: t.role,
+                    pesan: t.pesan,
+                    tanggal: t.created_at,
+                    balasanCount: count,
+                    waktuTerakhir: lastTime
+                };
+            });
         } catch (err) {
             console.warn("Gagal getTopikDiskusiData dari Supabase, memuat dari localStorage:", err);
             topics = JSON.parse(localStorage.getItem('topikDiskusiKios')) || [];
+            const localBalasan = JSON.parse(localStorage.getItem('balasanDiskusiKios')) || [];
+            topics = topics.map(t => {
+                const replies = localBalasan.filter(b => b.topikId === t.id);
+                const count = replies.length;
+                const lastTime = count > 0 ? replies[replies.length - 1].tanggal : (t.waktuTerakhir || t.tanggal);
+                return {
+                    ...t,
+                    balasanCount: count,
+                    waktuTerakhir: lastTime
+                };
+            });
         }
     }
     if (slotFilter) {
@@ -517,8 +549,8 @@ async function saveTopikDiskusiData(topikObj) {
             role: topikObj.role,
             pesan: topikObj.pesan,
             created_at: topikObj.tanggal,
-            balasan_count: topikObj.balasanCount,
-            waktu_terakhir: topikObj.waktuTerakhir
+            balasan_count: topikObj.balasanCount || 0,
+            waktu_terakhir: topikObj.waktuTerakhir || topikObj.tanggal
         };
         const { error } = await client
             .from('topik_diskusi')
@@ -567,11 +599,12 @@ async function saveBalasanDiskusiData(balasanObj) {
     localBalasan.push(balasanObj);
     localStorage.setItem('balasanDiskusiKios', JSON.stringify(localBalasan));
 
-    // 2. Update counter balasan di Topik
+    // 2. Hitung jumlah balasan baru & update counter di Topik (localStorage)
     const localTopik = JSON.parse(localStorage.getItem('topikDiskusiKios')) || [];
     const idx = localTopik.findIndex(t => t.id === balasanObj.topikId);
+    const newCount = localBalasan.filter(b => b.topikId === balasanObj.topikId).length;
     if (idx !== -1) {
-        localTopik[idx].balasanCount = (localTopik[idx].balasanCount || 0) + 1;
+        localTopik[idx].balasanCount = newCount;
         localTopik[idx].waktuTerakhir = balasanObj.tanggal;
         localStorage.setItem('topikDiskusiKios', JSON.stringify(localTopik));
     }
@@ -593,6 +626,16 @@ async function saveBalasanDiskusiData(balasanObj) {
             .insert([dbItem]);
 
         if (error) throw error;
+
+        // Update balasan_count & waktu_terakhir di tabel topik_diskusi Supabase
+        await client
+            .from('topik_diskusi')
+            .update({
+                balasan_count: newCount,
+                waktu_terakhir: balasanObj.tanggal
+            })
+            .eq('id', balasanObj.topikId);
+
     } catch (err) {
         console.error("Gagal saveBalasanDiskusiData ke Supabase:", err);
     }

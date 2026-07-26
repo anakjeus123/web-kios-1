@@ -106,9 +106,8 @@
                     <table class="forum-table">
                         <thead>
                             <tr>
-                                <th style="width: 45%;">Topik Diskusi</th>
-                                <th style="width: 20%;">Penulis</th>
-                                <th style="width: 10%; text-align: center;">Balasan</th>
+                                <th style="width: 50%;">Topik Diskusi</th>
+                                <th style="width: 25%;">Penulis</th>
                                 <th style="width: 15%;">Waktu Terakhir</th>
                                 <th style="width: 10%; text-align: center;">Aksi</th>
                             </tr>
@@ -325,7 +324,7 @@
             tbody.innerHTML = '';
 
             if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888; font-style: italic; padding: 20px;">(Belum ada topik diskusi untuk Kios Slot ${activeKiosSlot})</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888; font-style: italic; padding: 20px;">(Belum ada topik diskusi untuk Kios Slot ${activeKiosSlot})</td></tr>`;
                 return;
             }
 
@@ -339,7 +338,6 @@
                         <a href="#" class="topic-link" data-id="${t.id}">${t.subject}</a>
                     </td>
                     <td><strong>${t.nama}</strong> ${badgeRole}</td>
-                    <td style="text-align: center; font-weight: bold; color: #28c25a;">${t.balasanCount}</td>
                     <td style="font-size: 12px; color: #666;">${lastStr}</td>
                     <td style="text-align: center; white-space: nowrap;">
                         <button class="btn-open-thread" data-id="${t.id}" style="background: #28c25a; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; margin-right: 4px;">Buka Thread</button>
