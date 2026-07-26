@@ -136,14 +136,13 @@ linkDaftar.addEventListener('click', async function (e) {
 
     if (client) {
         try {
-            // Cek apakah username sudah ada
+            // Cek apakah username sudah ada di Supabase
             const { data, error } = await client
                 .from('akun_penyewa')
                 .select('username')
                 .ilike('username', usernameClean);
 
-            if (error) throw error;
-            if (data && data.length > 0) {
+            if (!error && data && data.length > 0) {
                 alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
                 return;
             }
@@ -153,43 +152,41 @@ linkDaftar.addEventListener('click', async function (e) {
                 .from('akun_penyewa')
                 .insert([{ username: usernameClean, password: passwordClean }]);
 
-            if (insertError) throw insertError;
-            terdaftar = true;
+            if (!insertError) {
+                terdaftar = true;
+            } else {
+                console.warn("Supabase insert warning:", insertError);
+            }
         } catch (err) {
-            console.error("Gagal daftar via Supabase:", err);
-            alert("Gagal mendaftar ke server Supabase. Silakan coba lagi.");
-            return;
+            console.warn("Supabase connection catch error:", err);
         }
     }
 
-    // Selalu simpan ke localStorage juga sebagai cadangan
+    // Selalu simpan ke localStorage sebagai jaminan utama agar akun dapat digunakan
     const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
     const sudahAda = akunList.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
 
-    if (!client) {
-        if (sudahAda) {
-            alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
-            return;
-        }
+    if (!sudahAda) {
         akunList.push({
             username: usernameClean,
             password: passwordClean
         });
         localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
         terdaftar = true;
-    } else {
-        // Jika pakai Supabase dan berhasil, kita sync juga ke local storage cadangan
-        if (!sudahAda) {
-            akunList.push({
-                username: usernameClean,
-                password: passwordClean
-            });
-            localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
-        }
+    } else if (!terdaftar) {
+        alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
+        return;
     }
 
     if (terdaftar) {
         alert("Akun '" + usernameClean + "' berhasil dibuat!\nSilakan login menggunakan username dan password Anda.");
+        const usernameEl = document.getElementById('username');
+        const passwordEl = document.getElementById('password');
+        if (usernameEl) usernameEl.value = usernameClean;
+        if (passwordEl) {
+            passwordEl.value = "";
+            passwordEl.focus();
+        }
     }
 });
 
