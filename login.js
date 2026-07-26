@@ -131,69 +131,39 @@ linkDaftar.addEventListener('click', async function (e) {
         return;
     }
 
-    const client = getSupabaseClient();
-    let terdaftar = false;
-    let supabaseGagal = false;
-
-    if (client) {
-        try {
-            // Cek apakah username sudah ada di Supabase
-            const { data, error } = await client
-                .from('akun_penyewa')
-                .select('username')
-                .ilike('username', usernameClean);
-
-            if (!error && data && data.length > 0) {
-                // Username sudah ada di Supabase
-                const akunListCek = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
-                const lokalAda = akunListCek.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
-                if (!lokalAda) {
-                    // Tetap simpan di lokal agar konsisten
-                    akunListCek.push({ username: usernameClean, password: passwordClean });
-                    localStorage.setItem('akunPenyewa', JSON.stringify(akunListCek));
-                }
-                alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
-                return;
-            }
-
-            // Insert akun baru ke Supabase
-            const { error: insertError } = await client
-                .from('akun_penyewa')
-                .insert([{ username: usernameClean, password: passwordClean }]);
-
-            if (!insertError) {
-                terdaftar = true;
-            } else {
-                console.warn("Supabase insert gagal, pakai localStorage:", insertError);
-                supabaseGagal = true;
-            }
-        } catch (err) {
-            console.warn("Supabase tidak dapat dihubungi, pakai localStorage:", err);
-            supabaseGagal = true;
-        }
-    }
-
-    // Simpan ke localStorage (SELALU, sebagai cadangan utama agar pop-up selalu muncul)
+    // 1. Cek apakah username sudah ada di localStorage
     const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
     const sudahAda = akunList.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
 
-    if (!sudahAda) {
-        akunList.push({ username: usernameClean, password: passwordClean });
-        localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
-        terdaftar = true;
-    } else if (!terdaftar) {
+    if (sudahAda) {
         alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
         return;
     }
 
-    if (terdaftar) {
-        alert("Akun berhasil dibuat.\n\nUsername '" + usernameClean + "' telah terdaftar.\nSilakan login menggunakan username dan password Anda.");
-        const usernameEl = document.getElementById('username');
-        const passwordEl = document.getElementById('password');
-        if (usernameEl) usernameEl.value = usernameClean;
-        if (passwordEl) {
-            passwordEl.value = "";
-            passwordEl.focus();
+    // 2. Simpan langsung ke localStorage untuk respon instan
+    akunList.push({ username: usernameClean, password: passwordClean });
+    localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
+
+    // 3. Tampilkan Pop-up Berhasil secara INSTAN
+    alert("Akun berhasil dibuat.\n\nUsername '" + usernameClean + "' telah terdaftar.\nSilakan login menggunakan username dan password Anda.");
+
+    const usernameEl = document.getElementById('username');
+    const passwordEl = document.getElementById('password');
+    if (usernameEl) usernameEl.value = usernameClean;
+    if (passwordEl) {
+        passwordEl.value = "";
+        passwordEl.focus();
+    }
+
+    // 4. Sync ke Supabase di background tanpa mengganggu/menghambat UI
+    const client = getSupabaseClient();
+    if (client) {
+        try {
+            client.from('akun_penyewa').insert([{ username: usernameClean, password: passwordClean }]).then(({ error }) => {
+                if (error) console.warn("Background sync Supabase:", error);
+            });
+        } catch (err) {
+            console.warn("Background sync error:", err);
         }
     }
 });
