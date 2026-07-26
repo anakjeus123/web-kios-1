@@ -131,39 +131,59 @@ linkDaftar.addEventListener('click', async function (e) {
         return;
     }
 
+    const client = getSupabaseClient();
+    let terdaftar = false;
+
     // 1. Cek apakah username sudah ada di localStorage
     const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
-    const sudahAda = akunList.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
+    const sudahAdaLocal = akunList.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
 
-    if (sudahAda) {
+    if (sudahAdaLocal) {
         alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
         return;
     }
 
-    // 2. Simpan langsung ke localStorage untuk respon instan
-    akunList.push({ username: usernameClean, password: passwordClean });
-    localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
-
-    // 3. Tampilkan Pop-up Berhasil secara INSTAN
-    alert("Akun berhasil dibuat.\n\nUsername '" + usernameClean + "' telah terdaftar.\nSilakan login menggunakan username dan password Anda.");
-
-    const usernameEl = document.getElementById('username');
-    const passwordEl = document.getElementById('password');
-    if (usernameEl) usernameEl.value = usernameClean;
-    if (passwordEl) {
-        passwordEl.value = "";
-        passwordEl.focus();
-    }
-
-    // 4. Sync ke Supabase di background tanpa mengganggu/menghambat UI
-    const client = getSupabaseClient();
+    // 2. Simpan dan verifikasi ke Supabase jika terhubung
     if (client) {
         try {
-            client.from('akun_penyewa').insert([{ username: usernameClean, password: passwordClean }]).then(({ error }) => {
-                if (error) console.warn("Background sync Supabase:", error);
-            });
+            const { data, error: selectErr } = await client
+                .from('akun_penyewa')
+                .select('username')
+                .ilike('username', usernameClean);
+
+            if (!selectErr && data && data.length > 0) {
+                alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
+                return;
+            }
+
+            const { error: insertErr } = await client
+                .from('akun_penyewa')
+                .insert([{ username: usernameClean, password: passwordClean }]);
+
+            if (!insertErr) {
+                terdaftar = true;
+            } else {
+                console.warn("Koneksi Supabase insert warning:", insertErr);
+            }
         } catch (err) {
-            console.warn("Background sync error:", err);
+            console.warn("Supabase catch error:", err);
+        }
+    }
+
+    // 3. Selalu simpan ke localStorage sebagai cadangan lokal
+    akunList.push({ username: usernameClean, password: passwordClean });
+    localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
+    terdaftar = true;
+
+    // 4. Tampilkan Pop-up Berhasil
+    if (terdaftar) {
+        alert("Akun berhasil dibuat.\n\nUsername '" + usernameClean + "' telah terdaftar.\nSilakan login menggunakan username dan password Anda.");
+        const usernameEl = document.getElementById('username');
+        const passwordEl = document.getElementById('password');
+        if (usernameEl) usernameEl.value = usernameClean;
+        if (passwordEl) {
+            passwordEl.value = "";
+            passwordEl.focus();
         }
     }
 });
