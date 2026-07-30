@@ -77,8 +77,8 @@ loginForm.addEventListener('submit', async function (event) {
         }
     }
 
-    // Fallback ke localStorage HANYA JIKA tidak menggunakan Supabase atau koneksi Supabase gagal
-    if (!client || (!databaseTerhubung && !akunCocok)) {
+    // Fallback/Cek ke localStorage jika belum ditemukan di Supabase
+    if (!akunCocok) {
         const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
         const userExistsLocal = akunList.some(a => a.username.toLowerCase() === usernameInput.toLowerCase());
         if (userExistsLocal) {
@@ -131,9 +131,19 @@ linkDaftar.addEventListener('click', async function (e) {
         return;
     }
 
+    // 1. Cek dulu di localStorage
+    const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
+    const sudahAdaLocal = akunList.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
+
+    if (sudahAdaLocal) {
+        alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
+        return;
+    }
+
     const client = getSupabaseClient();
     let terdaftar = false;
 
+    // 2. Cek & Simpan di Supabase jika terhubung
     if (client) {
         try {
             // Cek apakah username sudah ada di Supabase
@@ -162,22 +172,15 @@ linkDaftar.addEventListener('click', async function (e) {
         }
     }
 
-    // Selalu simpan ke localStorage sebagai jaminan utama agar akun dapat digunakan
-    const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
-    const sudahAda = akunList.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
+    // 3. Simpan ke localStorage sebagai jaminan utama agar akun dapat digunakan
+    akunList.push({
+        username: usernameClean,
+        password: passwordClean
+    });
+    localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
+    terdaftar = true;
 
-    if (!sudahAda) {
-        akunList.push({
-            username: usernameClean,
-            password: passwordClean
-        });
-        localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
-        terdaftar = true;
-    } else if (!terdaftar) {
-        alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
-        return;
-    }
-
+    // 4. Pop-up Sukses & Auto-fill Form Login
     if (terdaftar) {
         alert("Akun '" + usernameClean + "' berhasil dibuat!\nSilakan login menggunakan username dan password Anda.");
         const usernameEl = document.getElementById('username');
