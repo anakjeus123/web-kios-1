@@ -1,5 +1,5 @@
 // =========================================================
-// LOGIKA LOGIN & REGISTRASI PENYEWA VIA SUPABASE
+// LOGIKA LOGIN & REGISTRASI PENYEWA MURNI VIA SUPABASE
 // =========================================================
 
 // Ambil Klien Supabase jika tersedia
@@ -10,22 +10,11 @@ function getSupabaseClient() {
     return null;
 }
 
-// Inisialisasi akun default jika belum ada di localStorage (fallback)
-function inisialisasiAkun() {
-    if (!localStorage.getItem('akunPenyewa')) {
-        const akunDefault = [
-            { username: "wulan", password: "123" }
-        ];
-        localStorage.setItem('akunPenyewa', JSON.stringify(akunDefault));
-    }
-}
-inisialisasiAkun();
-
 // --- 1. Ambil Elemen dari HTML ---
 const loginForm = document.getElementById('login-form');
 const linkDaftar = document.getElementById('link-to-register');
 
-// --- 2. Logika Submit Login ---
+// --- 2. Logika Submit Login Murni Supabase ---
 loginForm.addEventListener('submit', async function (event) {
     event.preventDefault();
 
@@ -37,7 +26,7 @@ loginForm.addEventListener('submit', async function (event) {
         return;
     }
 
-    // Cek apakah ini admin (hardcoded lokal tetap didukung)
+    // Cek apakah ini login admin (hardcoded lokal tetap didukung)
     if (usernameInput.toLowerCase() === 'abim' && passwordInput === 'admin') {
         alert('Login Admin Berhasil!');
         localStorage.setItem('namaPenyewa', 'abiM');
@@ -47,71 +36,49 @@ loginForm.addEventListener('submit', async function (event) {
     }
 
     const client = getSupabaseClient();
-    let akunCocok = null;
-    let databaseTerhubung = false;
-    let userExist = false;
-
-    if (client) {
-        try {
-            // Ambil dari database Supabase
-            const { data, error } = await client
-                .from('akun_penyewa')
-                .select('*')
-                .ilike('username', usernameInput);
-
-            if (error) throw error;
-
-            databaseTerhubung = true; // Koneksi ke Supabase berhasil
-
-            if (data && data.length > 0) {
-                userExist = true; // Username ditemukan
-                // Cari password yang cocok (case-sensitive untuk password)
-                const user = data.find(u => u.password === passwordInput);
-                if (user) {
-                    akunCocok = { username: user.username };
-                }
-            }
-        } catch (err) {
-            console.error("Gagal verifikasi login via Supabase, mencoba localStorage:", err);
-            databaseTerhubung = false; // Gagalkan koneksi untuk memicu fallback
-        }
+    if (!client) {
+        alert('Koneksi database Supabase tidak tersedia.');
+        return;
     }
 
-    // Fallback/Cek ke localStorage jika belum ditemukan di Supabase
-    if (!akunCocok) {
-        const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
-        const userExistsLocal = akunList.some(a => a.username.toLowerCase() === usernameInput.toLowerCase());
-        if (userExistsLocal) {
-            userExist = true;
-        }
-        const localUser = akunList.find(a =>
-            a.username.toLowerCase() === usernameInput.toLowerCase() &&
-            a.password === passwordInput
-        );
-        if (localUser) {
-            akunCocok = { username: localUser.username };
-        }
-    }
+    try {
+        // Ambil data akun dari database Supabase (case-insensitive)
+        const { data, error } = await client
+            .from('akun_penyewa')
+            .select('*')
+            .ilike('username', usernameInput);
 
-    if (akunCocok) {
-        alert('Login Berhasil! Selamat Datang, ' + akunCocok.username);
-        localStorage.setItem('namaPenyewa', akunCocok.username);
-        if (akunCocok.username.toLowerCase() === 'abim') {
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            alert('Akun belum terdaftar! Silakan buat akun baru terlebih dahulu dengan mengeklik "Daftar Sekarang" di bawah.');
+            return;
+        }
+
+        // Cari password yang cocok (case-sensitive)
+        const user = data.find(u => u.password === passwordInput);
+        if (!user) {
+            alert('Password salah! Harap periksa kembali password Anda.');
+            return;
+        }
+
+        // Login Berhasil
+        alert('Login Berhasil! Selamat Datang, ' + user.username);
+        localStorage.setItem('namaPenyewa', user.username);
+        if (user.username.toLowerCase() === 'abim') {
             localStorage.setItem('namaAdmin', 'abiM');
         } else {
             localStorage.removeItem('namaAdmin');
         }
         window.location.href = 'dashboard_penyewa.html';
-    } else {
-        if (!userExist) {
-            alert('Akun belum terdaftar! Silakan buat akun baru terlebih dahulu dengan mengeklik "Daftar Sekarang" di bawah.');
-        } else {
-            alert('Password salah! Harap periksa kembali password Anda.');
-        }
+
+    } catch (err) {
+        console.error("Gagal verifikasi login via Supabase:", err);
+        alert("Gagal terhubung ke database Supabase. Silakan periksa koneksi internet Anda.");
     }
 });
 
-// --- 3. Logika Registrasi Akun Baru ---
+// --- 3. Logika Registrasi Akun Baru Murni Supabase ---
 linkDaftar.addEventListener('click', async function (e) {
     e.preventDefault();
 
@@ -131,58 +98,36 @@ linkDaftar.addEventListener('click', async function (e) {
         return;
     }
 
-    // 1. Cek dulu di localStorage
-    const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
-    const sudahAdaLocal = akunList.some(a => a.username.toLowerCase() === usernameClean.toLowerCase());
-
-    if (sudahAdaLocal) {
-        alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
+    const client = getSupabaseClient();
+    if (!client) {
+        alert("Koneksi database Supabase tidak tersedia.");
         return;
     }
 
-    const client = getSupabaseClient();
-    let terdaftar = false;
+    try {
+        // 1. Cek apakah username sudah ada di Supabase
+        const { data: existingUsers, error: checkError } = await client
+            .from('akun_penyewa')
+            .select('username')
+            .ilike('username', usernameClean);
 
-    // 2. Cek & Simpan di Supabase jika terhubung
-    if (client) {
-        try {
-            // Cek apakah username sudah ada di Supabase
-            const { data, error } = await client
-                .from('akun_penyewa')
-                .select('username')
-                .ilike('username', usernameClean);
+        if (checkError) throw checkError;
 
-            if (!error && data && data.length > 0) {
-                alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
-                return;
-            }
-
-            // Insert akun baru ke Supabase
-            const { error: insertError } = await client
-                .from('akun_penyewa')
-                .insert([{ username: usernameClean, password: passwordClean }]);
-
-            if (!insertError) {
-                terdaftar = true;
-            } else {
-                console.warn("Supabase insert warning:", insertError);
-            }
-        } catch (err) {
-            console.warn("Supabase connection catch error:", err);
+        if (existingUsers && existingUsers.length > 0) {
+            alert("Username '" + usernameClean + "' sudah terdaftar! Gunakan nama lain.");
+            return;
         }
-    }
 
-    // 3. Simpan ke localStorage sebagai jaminan utama agar akun dapat digunakan
-    akunList.push({
-        username: usernameClean,
-        password: passwordClean
-    });
-    localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
-    terdaftar = true;
+        // 2. Insert akun baru secara langsung ke Supabase
+        const { error: insertError } = await client
+            .from('akun_penyewa')
+            .insert([{ username: usernameClean, password: passwordClean }]);
 
-    // 4. Pop-up Sukses & Auto-fill Form Login
-    if (terdaftar) {
+        if (insertError) throw insertError;
+
+        // 3. Pop-up Sukses & Auto-fill Form Login
         alert("Akun '" + usernameClean + "' berhasil dibuat!\nSilakan login menggunakan username dan password Anda.");
+        
         const usernameEl = document.getElementById('username');
         const passwordEl = document.getElementById('password');
         if (usernameEl) usernameEl.value = usernameClean;
@@ -190,10 +135,13 @@ linkDaftar.addEventListener('click', async function (e) {
             passwordEl.value = "";
             passwordEl.focus();
         }
+    } catch (err) {
+        console.error("Gagal mendaftar ke Supabase:", err);
+        alert("Gagal mendaftar ke server Supabase: " + (err.message || "Terjadi kesalahan jaringan."));
     }
 });
 
-// --- 4. Logika Lupa Password ---
+// --- 4. Logika Lupa Password Murni Supabase ---
 const linkLupa = document.getElementById('link-to-forgot');
 if (linkLupa) {
     linkLupa.addEventListener('click', async function (e) {
@@ -208,73 +156,46 @@ if (linkLupa) {
         }
 
         const client = getSupabaseClient();
-        let userDitemukan = false;
-
-        if (client) {
-            try {
-                const { data, error } = await client
-                    .from('akun_penyewa')
-                    .select('*')
-                    .ilike('username', usernameClean);
-
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    userDitemukan = true;
-                }
-            } catch (err) {
-                console.error("Gagal cek username di Supabase:", err);
-            }
-        }
-
-        // Cek localStorage jika Supabase tidak aktif atau tidak ditemukan
-        const akunList = JSON.parse(localStorage.getItem('akunPenyewa')) || [];
-        const indexAkun = akunList.findIndex(a => a.username.toLowerCase() === usernameClean.toLowerCase());
-
         if (!client) {
-            userDitemukan = indexAkun !== -1;
-        }
-
-        if (!userDitemukan && indexAkun === -1) {
-            alert("Username '" + usernameClean + "' tidak ditemukan! Pastikan Anda memasukkan username dengan benar.");
+            alert("Koneksi database Supabase tidak tersedia.");
             return;
         }
 
-        // Jika ditemukan, minta password baru
-        const passwordBaru = prompt("Username ditemukan!\n\nMasukkan Password Baru:");
-        if (passwordBaru === null) return;
-        const passwordClean = passwordBaru.trim();
-        if (passwordClean === "") {
-            alert("Password baru tidak boleh kosong!");
-            return;
-        }
+        try {
+            // Cek apakah username terdaftar di Supabase
+            const { data, error } = await client
+                .from('akun_penyewa')
+                .select('*')
+                .ilike('username', usernameClean);
 
-        let resetBerhasil = false;
+            if (error) throw error;
 
-        if (client && userDitemukan) {
-            try {
-                const { error } = await client
-                    .from('akun_penyewa')
-                    .update({ password: passwordClean })
-                    .ilike('username', usernameClean);
-
-                if (error) throw error;
-                resetBerhasil = true;
-            } catch (err) {
-                console.error("Gagal update password di Supabase:", err);
-                alert("Gagal memperbarui password di server Supabase.");
+            if (!data || data.length === 0) {
+                alert("Username '" + usernameClean + "' tidak ditemukan! Pastikan Anda memasukkan username dengan benar.");
                 return;
             }
-        }
 
-        // Update localStorage
-        if (indexAkun !== -1) {
-            akunList[indexAkun].password = passwordClean;
-            localStorage.setItem('akunPenyewa', JSON.stringify(akunList));
-            resetBerhasil = true;
-        }
+            // Minta password baru jika ditemukan
+            const passwordBaru = prompt("Username ditemukan!\n\nMasukkan Password Baru:");
+            if (passwordBaru === null) return;
+            const passwordClean = passwordBaru.trim();
+            if (passwordClean === "") {
+                alert("Password baru tidak boleh kosong!");
+                return;
+            }
 
-        if (resetBerhasil) {
+            // Update password langsung di Supabase
+            const { error: updateError } = await client
+                .from('akun_penyewa')
+                .update({ password: passwordClean })
+                .ilike('username', usernameClean);
+
+            if (updateError) throw updateError;
+
             alert("Password untuk akun '" + usernameClean + "' berhasil diubah!\nSilakan login menggunakan password baru Anda.");
+        } catch (err) {
+            console.error("Gagal reset password di Supabase:", err);
+            alert("Gagal memperbarui password di server Supabase: " + (err.message || "Terjadi kesalahan."));
         }
     });
 }
